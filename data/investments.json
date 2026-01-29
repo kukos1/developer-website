@@ -1,0 +1,23 @@
+[
+    {
+        "id": "1",
+        "name": "Osiedle Zielona Przystań",
+        "location": "Warszawa, Mokotów",
+        "description": "Nowoczesne osiedle w sercu Mokotowa, otoczone zielenią i parkami. Idealne miejsce dla rodzin szukających spokoju w centrum miasta.",
+        "images": []
+    },
+    {
+        "id": "2",
+        "name": "Lofty Klonowa",
+        "location": "Łódź, Śródmieście",
+        "description": "Rewitalizowana fabryka przekształcona w luksusowe lofty. Industrialny styl połączony z nowoczesnymi technologiami.",
+        "images": []
+    },
+    {
+        "id": "3",
+        "name": "Wille Słoneczne",
+        "location": "Kraków, Wola Justowska",
+        "description": "Kameralne osiedle domów jednorodzinnych w prestiżowej dzielnicy Krakowa. Wysoki standard wykończenia i prywatne ogrody.",
+        "images": []
+    }
+]

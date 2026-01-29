@@ -1,0 +1,83 @@
+import Link from 'next/link';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import fs from 'fs/promises';
+import path from 'path';
+
+async function getInvestments() {
+    const dataFilePath = path.join(process.cwd(), 'data', 'investments.json');
+    try {
+        const fileContent = await fs.readFile(dataFilePath, 'utf8');
+        return JSON.parse(fileContent);
+    } catch (error) {
+        return [];
+    }
+}
+
+export default async function InvestmentsPage() {
+    const investments = await getInvestments();
+
+    return (
+        <main>
+            <Navbar />
+            <section className="section container" style={{ paddingTop: '120px' }}>
+                <h1 style={{ marginBottom: '3rem', textAlign: 'center', fontSize: '2.5rem' }}>Nasze Inwestycje</h1>
+
+                <div style={{ display: 'grid', gap: '4rem' }}>
+                    {investments.map((inv, index) => (
+                        <div key={inv.id} style={{
+                            display: 'grid',
+                            gridTemplateColumns: index % 2 === 0 ? '1fr 1fr' : '1fr 1fr',
+                            gap: '3rem',
+                            alignItems: 'center',
+                            direction: index % 2 === 1 ? 'rtl' : 'ltr'
+                        }}>
+                            <div style={{ direction: 'ltr' }}>
+                                {inv.images && inv.images.length > 0 ? (
+                                    <div style={{
+                                        height: '400px',
+                                        width: '100%',
+                                        background: `url(${inv.images[0]}) center/cover no-repeat`,
+                                        borderRadius: '8px',
+                                        boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
+                                    }}></div>
+                                ) : (
+                                    <div style={{
+                                        height: '400px',
+                                        width: '100%',
+                                        background: '#222',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        borderRadius: '8px',
+                                        color: '#555'
+                                    }}>
+                                        Brak zdjęcia
+                                    </div>
+                                )}
+                            </div>
+
+                            <div style={{ direction: 'ltr' }}>
+                                <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--primary)' }}>{inv.name}</h2>
+                                <p style={{ fontSize: '1.2rem', color: '#aaa', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    📍 {inv.location}
+                                </p>
+                                <p style={{ lineHeight: '1.8', color: '#ccc', marginBottom: '2rem' }}>
+                                    {inv.description}
+                                </p>
+                                <Link href="/kontakt" className="btn">
+                                    Zapytaj o szczegóły
+                                </Link>
+                            </div>
+                        </div>
+                    ))}
+
+                    {investments.length === 0 && (
+                        <p style={{ textAlign: 'center', color: '#888' }}>Brak inwestycji do wyświetlenia.</p>
+                    )}
+                </div>
+            </section>
+            <Footer />
+        </main>
+    );
+}

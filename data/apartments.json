@@ -1,0 +1,53 @@
+[
+  {
+    "id": "1",
+    "name": "Apartament A1",
+    "floor": 1,
+    "rooms": 2,
+    "area": 45.5,
+    "price": 450000,
+    "status": "available",
+    "description": "Przestronne mieszkanie z widokiem na park. Idealne dla singla lub pary."
+  },
+  {
+    "id": "2",
+    "name": "Apartament B3",
+    "floor": 2,
+    "rooms": 3,
+    "area": 62,
+    "price": 620000,
+    "status": "reserved",
+    "description": "Rodzinne mieszkanie z dużym balkonem i oddzielną kuchnią."
+  },
+  {
+    "id": "3",
+    "name": "Penthouse C1",
+    "floor": 5,
+    "rooms": 4,
+    "area": 120,
+    "price": 1500000,
+    "status": "available",
+    "description": "Luksusowy penthouse z tarasem 40m2 i panoramicznym widokiem na miasto."
+  },
+  {
+    "name": "CZarnogora",
+    "floor": 1,
+    "rooms": 2,
+    "area": 33,
+    "price": 23231231,
+    "status": "available",
+    "description": "wwdaadawda",
+    "id": "1769507805556"
+  },
+  {
+    "id": "1769512196160",
+    "name": "CZarnogora",
+    "floor": 3,
+    "rooms": 3,
+    "area": 43,
+    "price": 3333333,
+    "status": "available",
+    "description": "tregerge",
+    "imageUrl": "/uploads/1769512196152-pobrane.jpg"
+  }
+]
