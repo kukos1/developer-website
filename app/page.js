@@ -49,16 +49,23 @@ export default async function Home() {
       <Navbar />
 
       <section className={styles.hero}>
+        <div className={styles.heroBgDecoration}></div>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>Budujemy Przyszłość,<br />Tworzymy Przestrzeń</h1>
           <p className={styles.heroSubtitle}>Nowoczesne inwestycje budowlane dopasowane do Twoich potrzeb.</p>
           <div className={styles.heroBtns}>
-            <Link href="/inwestycje" className="btn">
+            <Link href="/inwestycje" className="btn shimmer">
               Nasze Inwestycje
             </Link>
             <Link href="/oferta" className="btn btnOutline">
               Szukaj Mieszkania
             </Link>
+          </div>
+          <div className={styles.scrollDown}>
+            <div className={styles.mouse}>
+              <div className={styles.wheel}></div>
+            </div>
+            <span>Przewiń</span>
           </div>
         </div>
       </section>
