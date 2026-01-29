@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ApartmentCard from '@/components/ApartmentCard';
@@ -68,7 +69,15 @@ export default async function Home() {
           {featuredInvestments.map((inv) => (
             <Link href="/inwestycje" key={inv.id} className={styles.investmentCard}>
               {inv.images && inv.images.length > 0 && (
-                <div className={styles.investmentImage} style={{ backgroundImage: `url(${inv.images[0]})` }}></div>
+                <div className={styles.investmentImage} style={{ position: 'relative', overflow: 'hidden' }}>
+                  <Image
+                    src={inv.images[0]}
+                    alt={inv.name}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                </div>
               )}
               <div className={styles.investmentContent}>
                 <h3>{inv.name}</h3>

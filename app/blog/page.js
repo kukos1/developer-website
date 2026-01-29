@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
@@ -43,8 +44,16 @@ export default async function BlogPage() {
                                 <div style={{
                                     height: '300px',
                                     width: '100%',
-                                    background: `url(${item.image}) center/cover no-repeat`
-                                }}></div>
+                                    position: 'relative'
+                                }}>
+                                    <Image
+                                        src={item.image}
+                                        alt={item.title}
+                                        fill
+                                        style={{ objectFit: 'cover' }}
+                                        sizes="(max-width: 800px) 100vw, 800px"
+                                    />
+                                </div>
                             )}
 
                             <div style={{ padding: '2rem' }}>

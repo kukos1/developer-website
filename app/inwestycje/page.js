@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
@@ -38,18 +39,18 @@ export default async function InvestmentsPage() {
                             alignItems: 'center',
                             direction: index % 2 === 1 ? 'rtl' : 'ltr'
                         }}>
-                            <div style={{ direction: 'ltr' }}>
+                            <div style={{ direction: 'ltr', position: 'relative', height: '400px', width: '100%' }}>
                                 {inv.images && inv.images.length > 0 ? (
-                                    <div style={{
-                                        height: '400px',
-                                        width: '100%',
-                                        background: `url(${inv.images[0]}) center/cover no-repeat`,
-                                        borderRadius: '8px',
-                                        boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
-                                    }}></div>
+                                    <Image
+                                        src={inv.images[0]}
+                                        alt={inv.name}
+                                        fill
+                                        style={{ objectFit: 'cover', borderRadius: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
+                                        sizes="(max-width: 768px) 100vw, 50vw"
+                                    />
                                 ) : (
                                     <div style={{
-                                        height: '400px',
+                                        height: '100%',
                                         width: '100%',
                                         background: '#222',
                                         display: 'flex',

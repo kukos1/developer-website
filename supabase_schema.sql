@@ -33,7 +33,17 @@ CREATE TABLE news (
   image TEXT
 );
 
--- Create storage bucket for uploads
--- Note: Buckets are usually created via the UI or a separate script
--- But you can also do it via SQL if you have the permission
-INSERT INTO storage.buckets (id, name, public) VALUES ('uploads', 'uploads', true);
+-- 1. Create storage bucket for uploads (if not exists)
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('uploads', 'uploads', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. Allow public access to files (Read)
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'uploads');
+
+-- 3. Allow anonymous uploads (Write) 
+CREATE POLICY "Allow Anon Uploads" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'uploads');
+
+-- 4. Allow updates and deletes (for editing/removing photos)
+CREATE POLICY "Allow Anon Update" ON storage.objects FOR UPDATE USING (bucket_id = 'uploads');
+CREATE POLICY "Allow Anon Delete" ON storage.objects FOR DELETE USING (bucket_id = 'uploads');

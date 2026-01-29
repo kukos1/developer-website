@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { useState } from 'react';
 import styles from './ApartmentCard.module.css';
 
@@ -44,10 +45,14 @@ export default function ApartmentCard({ apartment }) {
         <div className={styles.card}>
             <div className={styles.imageContainer}>
                 {images.length > 0 ? (
-                    <div
-                        className={styles.imagePlaceholder}
-                        style={{ background: `url(${images[currentIndex]}) center/cover no-repeat` }}
-                    ></div>
+                    <Image
+                        src={images[currentIndex]}
+                        alt={apartment.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className={styles.apartmentImage}
+                        priority={currentIndex === 0}
+                    />
                 ) : (
                     <div className={styles.imagePlaceholder}>
                         Wizualizacja Apartamentu
