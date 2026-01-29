@@ -58,8 +58,8 @@
 .navLinks a {
     font-size: 0.85rem;
     text-transform: uppercase;
-    font-weight: 500;
-    color: #444;
+    font-weight: 700;
+    color: #000;
     transition: all 0.3s;
     position: relative;
 }

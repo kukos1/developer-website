@@ -1,12 +1,12 @@
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
+  --background: #fbfbfc;
+  --foreground: #000000;
 
-  --primary: #0099ff;
-  --primary-hover: #007acc;
+  --primary: #0088ff;
+  --primary-hover: #0066cc;
 
   --card-bg: #ffffff;
-  --card-border: #e1e8ed;
+  --card-border: #d0d7de;
 
   --font-heading: 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
