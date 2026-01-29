@@ -52,7 +52,7 @@ export default async function Home() {
         <div className={styles.heroBgDecoration}></div>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>Budujemy Przyszłość,<br />Tworzymy Przestrzeń</h1>
-          <p className={styles.heroSubtitle}>Nowoczesne inwestycje budowlane dopasowane do Twoich potrzeb.</p>
+          <p className={styles.heroSubtitle}>Nowoczesne inwestycje budowlane dopasowane do Twoich potrzeb, które przetrwają pokolenia.</p>
           <div className={styles.heroBtns}>
             <Link href="/inwestycje" className="btn shimmer">
               Nasze Inwestycje
@@ -66,7 +66,28 @@ export default async function Home() {
           <div className={styles.mouse}>
             <div className={styles.wheel}></div>
           </div>
-          <span>Przewiń</span>
+        </div>
+      </section>
+
+      <section className={styles.whyUs}>
+        <div className="container">
+          <div className={styles.whyUsGrid}>
+            <div className={styles.whyUsItem}>
+              <div className={styles.whyUsIcon}>🏗️</div>
+              <h3>Solidność</h3>
+              <p>Ponad 15 lat doświadczenia w realizacji najbardziej wymagających projektów budowlanych.</p>
+            </div>
+            <div className={styles.whyUsItem}>
+              <div className={styles.whyUsIcon}>✨</div>
+              <h3>Nowoczesność</h3>
+              <p>Wykorzystujemy najnowsze technologie i materiały premium dla Twojego komfortu.</p>
+            </div>
+            <div className={styles.whyUsItem}>
+              <div className={styles.whyUsIcon}>🤝</div>
+              <h3>Zaufanie</h3>
+              <p>Setki zadowolonych rodzin, które odnalazły swój wymarzony dom w naszych inwestycjach.</p>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -44,19 +44,17 @@
 
 .scrollDown {
   position: absolute;
-  bottom: 40px;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.4);
   animation: bounce 2s infinite;
+  z-index: 10;
+  pointer-events: none;
 }
 
 .mouse {
@@ -161,6 +159,43 @@
   background-color: var(--primary);
 }
 
+/* Why Us Section */
+.whyUs {
+  padding: 5rem 0;
+  background-color: #fbfbfc;
+  border-bottom: 1px solid #eee;
+}
+
+.whyUsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem;
+}
+
+.whyUsItem {
+  text-align: center;
+  padding: 1rem;
+}
+
+.whyUsIcon {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  display: inline-block;
+  opacity: 0.9;
+}
+
+.whyUsItem h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: #111;
+  font-weight: 800;
+}
+
+.whyUsItem p {
+  color: #666;
+  line-height: 1.6;
+}
+
 .featuredGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -172,29 +207,29 @@
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-radius: 12px;
-  border: 1px solid #eee;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .investmentCard:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 30px 60px rgba(0, 136, 255, 0.1);
-  border-color: var(--primary);
+  transform: translateY(-10px);
+  box-shadow: 0 40px 80px rgba(0, 136, 255, 0.12);
+  border-color: rgba(0, 136, 255, 0.2);
 }
 
 .investmentImage {
-  height: 220px;
+  height: 250px;
   position: relative;
-  background-color: #f5f5f5;
+  background-color: #f9f9f9;
 }
 
 .investmentContent {
-  padding: 1.5rem;
+  padding: 2rem;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -203,37 +238,37 @@
 .investmentContent h3 {
   color: #111;
   margin-bottom: 0.5rem;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
+  font-weight: 800;
 }
 
 .investmentLocation {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--primary);
-  margin-bottom: 1rem;
-  font-weight: 600;
+  margin-bottom: 1.25rem;
+  font-weight: 700;
 }
 
 .investmentDesc {
-  line-height: 1.6;
-  color: #333;
-  margin-bottom: 1.5rem;
+  line-height: 1.7;
+  color: #555;
+  margin-bottom: 2rem;
   flex: 1;
+  font-size: 1rem;
 }
 
 .investmentLink {
-  color: #111;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-bottom: 2px solid var(--primary);
-  align-self: flex-start;
+  color: var(--primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   transition: all 0.3s;
 }
 
 .investmentCard:hover .investmentLink {
-  background: var(--primary);
-  color: #fff;
-  padding: 0 0.5rem;
-  border-radius: 4px;
+  gap: 0.75rem;
 }
 
 /* O Nas & Kontakt Page Styles */
