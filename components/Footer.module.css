@@ -1,7 +1,7 @@
 .footer {
-    background: #111;
+    background: #f8f9fa;
     padding: 4rem 0 2rem;
-    border-top: 1px solid #222;
+    border-top: 1px solid #eee;
 }
 
 .footerGrid {
@@ -12,23 +12,25 @@
 }
 
 .footerLogo {
-    font-family: var(--font-heading);
     font-size: 1.5rem;
-    color: var(--primary);
+    color: #1a1a1a;
     margin-bottom: 0.5rem;
+    font-weight: 800;
 }
 
 .footerTagline {
-    color: #666;
-    font-size: 0.9rem;
+    color: var(--primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .footerTitle {
-    font-size: 1rem;
-    color: #fff;
-    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #111;
+    margin-bottom: 1.5rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    font-weight: 700;
 }
 
 .footerLinks {
@@ -36,11 +38,11 @@
 }
 
 .footerLinks li {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
 }
 
 .footerLinks a {
-    color: #888;
+    color: #555;
     font-size: 0.9rem;
     transition: color 0.3s;
 }
@@ -50,16 +52,16 @@
 }
 
 .footerContact {
-    color: #888;
+    color: #555;
     font-size: 0.9rem;
     line-height: 1.8;
 }
 
 .footerBottom {
-    border-top: 1px solid #222;
+    border-top: 1px solid #eee;
     padding-top: 2rem;
     text-align: center;
-    color: #555;
+    color: #888;
     font-size: 0.85rem;
 }
 
