@@ -3,25 +3,36 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ApartmentCard from '@/components/ApartmentCard';
 import styles from './page.module.css';
-import fs from 'fs/promises';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 async function getApartments() {
   try {
-    const filePath = path.join(process.cwd(), 'data', 'apartments.json');
-    const fileContent = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(fileContent);
+    const { data, error } = await supabase
+      .from('apartments')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
   } catch (error) {
+    console.error('Error fetching apartments:', error);
     return [];
   }
 }
 
 async function getInvestments() {
   try {
-    const filePath = path.join(process.cwd(), 'data', 'investments.json');
-    const fileContent = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(fileContent);
+    const { data, error } = await supabase
+      .from('investments')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
   } catch (error) {
+    console.error('Error fetching investments:', error);
     return [];
   }
 }
@@ -29,8 +40,8 @@ async function getInvestments() {
 export default async function Home() {
   const apartments = await getApartments();
   const investments = await getInvestments();
-  const featuredApartments = apartments.filter(a => a.status === 'available').slice(0, 3);
-  const featuredInvestments = investments.slice(0, 3);
+  const featuredApartments = (apartments || []).filter(a => a.status === 'available').slice(0, 3);
+  const featuredInvestments = (investments || []).slice(0, 3);
 
   return (
     <main>

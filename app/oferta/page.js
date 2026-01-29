@@ -2,15 +2,21 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ApartmentCard from '@/components/ApartmentCard';
-import fs from 'fs/promises';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 async function getApartments() {
     try {
-        const filePath = path.join(process.cwd(), 'data', 'apartments.json');
-        const fileContent = await fs.readFile(filePath, 'utf8');
-        return JSON.parse(fileContent);
+        const { data, error } = await supabase
+            .from('apartments')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
+        console.error('Error fetching apartments:', error);
         return [];
     }
 }

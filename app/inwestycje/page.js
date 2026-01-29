@@ -1,15 +1,21 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import fs from 'fs/promises';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 async function getInvestments() {
-    const dataFilePath = path.join(process.cwd(), 'data', 'investments.json');
     try {
-        const fileContent = await fs.readFile(dataFilePath, 'utf8');
-        return JSON.parse(fileContent);
+        const { data, error } = await supabase
+            .from('investments')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
+        console.error('Error fetching investments:', error);
         return [];
     }
 }

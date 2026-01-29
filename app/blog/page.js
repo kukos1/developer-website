@@ -1,15 +1,21 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import fs from 'fs/promises';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 async function getNews() {
-    const dataFilePath = path.join(process.cwd(), 'data', 'news.json');
     try {
-        const fileContent = await fs.readFile(dataFilePath, 'utf8');
-        return JSON.parse(fileContent);
+        const { data, error } = await supabase
+            .from('news')
+            .select('*')
+            .order('date', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
+        console.error('Error fetching news:', error);
         return [];
     }
 }
