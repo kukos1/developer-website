@@ -1,29 +1,17 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
-import { writeFile } from 'fs/promises';
-
-const dataFilePath = path.join(process.cwd(), 'data', 'apartments.json');
-const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-
-async function getApartments() {
-    try {
-        const fileContent = await fs.readFile(dataFilePath, 'utf8');
-        return JSON.parse(fileContent);
-    } catch (error) {
-        return [];
-    }
-}
-
-async function saveApartments(apartments) {
-    await fs.writeFile(dataFilePath, JSON.stringify(apartments, null, 2));
-}
+import { supabase } from '@/lib/supabase';
 
 export async function GET() {
     try {
-        const apartments = await getApartments();
-        return NextResponse.json(apartments);
+        const { data, error } = await supabase
+            .from('apartments')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return NextResponse.json(data);
     } catch (error) {
+        console.error('Error fetching apartments:', error);
         return NextResponse.json({ error: 'Failed to load apartments' }, { status: 500 });
     }
 }
@@ -31,11 +19,6 @@ export async function GET() {
 export async function POST(request) {
     try {
         const formData = await request.formData();
-
-        // ... existing POST logic reused or extracted ...
-        // Since we are replacing the file, we copy the logic here or refactor.
-        // For simplicity in this replacement, I'll keep the full logic.
-
         const name = formData.get('name');
         const floor = formData.get('floor');
         const rooms = formData.get('rooms');
@@ -50,40 +33,50 @@ export async function POST(request) {
         }
 
         const images = [];
-        if (imageFiles.length > 0) {
-            try { await fs.access(uploadsDir); } catch { await fs.mkdir(uploadsDir, { recursive: true }); }
-            for (const file of imageFiles) {
-                if (file && file.name) {
-                    const bytes = await file.arrayBuffer();
-                    const buffer = Buffer.from(bytes);
-                    const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${file.name.replace(/\s/g, '-')}`;
-                    const filePath = path.join(uploadsDir, fileName);
-                    await writeFile(filePath, buffer);
-                    images.push(`/uploads/${fileName}`);
-                }
+        for (const file of imageFiles) {
+            if (file && file.name) {
+                const bytes = await file.arrayBuffer();
+                const buffer = Buffer.from(bytes);
+                const fileName = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
+
+                const { data, error: uploadError } = await supabase.storage
+                    .from('uploads')
+                    .upload(`apartments/${fileName}`, buffer, {
+                        contentType: file.type,
+                        upsert: true
+                    });
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('uploads')
+                    .getPublicUrl(`apartments/${fileName}`);
+
+                images.push(publicUrl);
             }
         }
 
-        const apartments = await getApartments();
-        const apartmentToAdd = {
-            id: Date.now().toString(),
-            name,
-            floor: Number(floor),
-            rooms: Number(rooms),
-            area: Number(area),
-            price: Number(price),
-            status,
-            description,
-            images,
-            imageUrl: images.length > 0 ? images[0] : null
-        };
+        const { data, error } = await supabase
+            .from('apartments')
+            .insert([{
+                name,
+                floor: Number(floor),
+                rooms: Number(rooms),
+                area: Number(area),
+                price: Number(price),
+                status,
+                description,
+                images,
+                image_url: images.length > 0 ? images[0] : null
+            }])
+            .select()
+            .single();
 
-        apartments.push(apartmentToAdd);
-        await saveApartments(apartments);
+        if (error) throw error;
 
-        return NextResponse.json(apartmentToAdd, { status: 201 });
+        return NextResponse.json(data, { status: 201 });
     } catch (error) {
-        console.error(error);
+        console.error('Error in POST apartments:', error);
         return NextResponse.json({ error: 'Failed to save apartment' }, { status: 500 });
     }
 }
@@ -97,55 +90,61 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
 
-        const apartments = await getApartments();
-        const index = apartments.findIndex(apt => apt.id === id);
+        const updates = {};
+        if (formData.has('name')) updates.name = formData.get('name');
+        if (formData.has('floor')) updates.floor = Number(formData.get('floor'));
+        if (formData.has('rooms')) updates.rooms = Number(formData.get('rooms'));
+        if (formData.has('area')) updates.area = Number(formData.get('area'));
+        if (formData.has('price')) updates.price = Number(formData.get('price'));
+        if (formData.has('status')) updates.status = formData.get('status');
+        if (formData.has('description')) updates.description = formData.get('description');
 
-        if (index === -1) {
-            return NextResponse.json({ error: 'Apartment not found' }, { status: 404 });
-        }
-
-        const existingApartment = apartments[index];
-
-        // Update basic fields
-        if (formData.has('name')) existingApartment.name = formData.get('name');
-        if (formData.has('floor')) existingApartment.floor = Number(formData.get('floor'));
-        if (formData.has('rooms')) existingApartment.rooms = Number(formData.get('rooms'));
-        if (formData.has('area')) existingApartment.area = Number(formData.get('area'));
-        if (formData.has('price')) existingApartment.price = Number(formData.get('price'));
-        if (formData.has('status')) existingApartment.status = formData.get('status');
-        if (formData.has('description')) existingApartment.description = formData.get('description');
-
-        // Handle new images
         const imageFiles = formData.getAll('images');
         if (imageFiles.length > 0) {
-            try { await fs.access(uploadsDir); } catch { await fs.mkdir(uploadsDir, { recursive: true }); }
+            const newImages = [];
             for (const file of imageFiles) {
                 if (file && file.name) {
                     const bytes = await file.arrayBuffer();
                     const buffer = Buffer.from(bytes);
-                    const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${file.name.replace(/\s/g, '-')}`;
-                    const filePath = path.join(uploadsDir, fileName);
-                    await writeFile(filePath, buffer);
-                    if (!existingApartment.images) existingApartment.images = [];
-                    existingApartment.images.push(`/uploads/${fileName}`);
+                    const fileName = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
+
+                    const { error: uploadError } = await supabase.storage
+                        .from('uploads')
+                        .upload(`apartments/${fileName}`, buffer, {
+                            contentType: file.type,
+                            upsert: true
+                        });
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('uploads')
+                        .getPublicUrl(`apartments/${fileName}`);
+
+                    newImages.push(publicUrl);
                 }
             }
-            // Update primary image if needed
-            if (existingApartment.images.length > 0) {
-                existingApartment.imageUrl = existingApartment.images[0];
+
+            // To be robust, we'd fetch existing images and append, but for now we follow old logic
+            // providing limited image management
+            if (newImages.length > 0) {
+                updates.images = newImages;
+                updates.image_url = newImages[0];
             }
         }
 
-        // Handle image removal (optional logic, simplifed for now to just append new ones. 
-        // Real deletion would need specific IDs of images to remove)
+        const { data, error } = await supabase
+            .from('apartments')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
 
-        apartments[index] = existingApartment;
-        await saveApartments(apartments);
+        if (error) throw error;
 
-        return NextResponse.json(existingApartment);
-
+        return NextResponse.json(data);
     } catch (error) {
-        console.error(error);
+        console.error('Error in PUT apartments:', error);
         return NextResponse.json({ error: 'Failed to update apartment' }, { status: 500 });
     }
 }
@@ -159,17 +158,16 @@ export async function DELETE(request) {
             return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
 
-        const apartments = await getApartments();
-        const filteredApartments = apartments.filter(apt => apt.id !== id);
+        const { error } = await supabase
+            .from('apartments')
+            .delete()
+            .eq('id', id);
 
-        if (apartments.length === filteredApartments.length) {
-            return NextResponse.json({ error: 'Apartment not found' }, { status: 404 });
-        }
+        if (error) throw error;
 
-        await saveApartments(filteredApartments);
         return NextResponse.json({ message: 'Apartment deleted' });
-
     } catch (error) {
+        console.error('Error in DELETE apartment:', error);
         return NextResponse.json({ error: 'Failed to delete apartment' }, { status: 500 });
     }
 }

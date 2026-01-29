@@ -1,29 +1,17 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
-import { writeFile } from 'fs/promises';
-
-const dataFilePath = path.join(process.cwd(), 'data', 'investments.json');
-const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-
-async function getInvestments() {
-    try {
-        const fileContent = await fs.readFile(dataFilePath, 'utf8');
-        return JSON.parse(fileContent);
-    } catch (error) {
-        return [];
-    }
-}
-
-async function saveInvestments(data) {
-    await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2));
-}
+import { supabase } from '@/lib/supabase';
 
 export async function GET() {
     try {
-        const data = await getInvestments();
+        const { data, error } = await supabase
+            .from('investments')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
         return NextResponse.json(data);
     } catch (error) {
+        console.error('Error fetching investments:', error);
         return NextResponse.json({ error: 'Failed to load investments' }, { status: 500 });
     }
 }
@@ -31,7 +19,6 @@ export async function GET() {
 export async function POST(request) {
     try {
         const formData = await request.formData();
-
         const name = formData.get('name');
         const location = formData.get('location');
         const description = formData.get('description');
@@ -42,35 +29,45 @@ export async function POST(request) {
         }
 
         const images = [];
-        if (imageFiles.length > 0) {
-            try { await fs.access(uploadsDir); } catch { await fs.mkdir(uploadsDir, { recursive: true }); }
-            for (const file of imageFiles) {
-                if (file && file.name) {
-                    const bytes = await file.arrayBuffer();
-                    const buffer = Buffer.from(bytes);
-                    const fileName = `inv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${file.name.replace(/\s/g, '-')}`;
-                    const filePath = path.join(uploadsDir, fileName);
-                    await writeFile(filePath, buffer);
-                    images.push(`/uploads/${fileName}`);
-                }
+        for (const file of imageFiles) {
+            if (file && file.name) {
+                const bytes = await file.arrayBuffer();
+                const buffer = Buffer.from(bytes);
+                const fileName = `inv-${Date.now()}-${file.name.replace(/\s/g, '-')}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('uploads')
+                    .upload(`investments/${fileName}`, buffer, {
+                        contentType: file.type,
+                        upsert: true
+                    });
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('uploads')
+                    .getPublicUrl(`investments/${fileName}`);
+
+                images.push(publicUrl);
             }
         }
 
-        const currentData = await getInvestments();
-        const newItem = {
-            id: Date.now().toString(),
-            name,
-            location,
-            description,
-            images,
-        };
+        const { data, error } = await supabase
+            .from('investments')
+            .insert([{
+                name,
+                location,
+                description,
+                images
+            }])
+            .select()
+            .single();
 
-        currentData.push(newItem);
-        await saveInvestments(currentData);
+        if (error) throw error;
 
-        return NextResponse.json(newItem, { status: 201 });
+        return NextResponse.json(data, { status: 201 });
     } catch (error) {
-        console.error(error);
+        console.error('Error in POST investments:', error);
         return NextResponse.json({ error: 'Failed to save investment' }, { status: 500 });
     }
 }
@@ -84,42 +81,51 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
 
-        const currentData = await getInvestments();
-        const index = currentData.findIndex(item => item.id === id);
-
-        if (index === -1) {
-            return NextResponse.json({ error: 'Investment not found' }, { status: 404 });
-        }
-
-        const existingItem = currentData[index];
-
-        if (formData.has('name')) existingItem.name = formData.get('name');
-        if (formData.has('location')) existingItem.location = formData.get('location');
-        if (formData.has('description')) existingItem.description = formData.get('description');
+        const updates = {};
+        if (formData.has('name')) updates.name = formData.get('name');
+        if (formData.has('location')) updates.location = formData.get('location');
+        if (formData.has('description')) updates.description = formData.get('description');
 
         const imageFiles = formData.getAll('images');
         if (imageFiles.length > 0) {
-            try { await fs.access(uploadsDir); } catch { await fs.mkdir(uploadsDir, { recursive: true }); }
+            const newImages = [];
             for (const file of imageFiles) {
                 if (file && file.name) {
                     const bytes = await file.arrayBuffer();
                     const buffer = Buffer.from(bytes);
-                    const fileName = `inv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${file.name.replace(/\s/g, '-')}`;
-                    const filePath = path.join(uploadsDir, fileName);
-                    await writeFile(filePath, buffer);
-                    if (!existingItem.images) existingItem.images = [];
-                    existingItem.images.push(`/uploads/${fileName}`);
+                    const fileName = `inv-${Date.now()}-${file.name.replace(/\s/g, '-')}`;
+
+                    const { error: uploadError } = await supabase.storage
+                        .from('uploads')
+                        .upload(`investments/${fileName}`, buffer, {
+                            contentType: file.type,
+                            upsert: true
+                        });
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('uploads')
+                        .getPublicUrl(`investments/${fileName}`);
+
+                    newImages.push(publicUrl);
                 }
             }
+            if (newImages.length > 0) updates.images = newImages;
         }
 
-        currentData[index] = existingItem;
-        await saveInvestments(currentData);
+        const { data, error } = await supabase
+            .from('investments')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
 
-        return NextResponse.json(existingItem);
+        if (error) throw error;
 
+        return NextResponse.json(data);
     } catch (error) {
-        console.error(error);
+        console.error('Error in PUT investments:', error);
         return NextResponse.json({ error: 'Failed to update investment' }, { status: 500 });
     }
 }
@@ -133,17 +139,16 @@ export async function DELETE(request) {
             return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
 
-        const currentData = await getInvestments();
-        const filteredData = currentData.filter(item => item.id !== id);
+        const { error } = await supabase
+            .from('investments')
+            .delete()
+            .eq('id', id);
 
-        if (currentData.length === filteredData.length) {
-            return NextResponse.json({ error: 'Investment not found' }, { status: 404 });
-        }
+        if (error) throw error;
 
-        await saveInvestments(filteredData);
         return NextResponse.json({ message: 'Investment deleted' });
-
     } catch (error) {
+        console.error('Error in DELETE investment:', error);
         return NextResponse.json({ error: 'Failed to delete investment' }, { status: 500 });
     }
 }
