@@ -61,12 +61,12 @@ export default async function Home() {
               Szukaj Mieszkania
             </Link>
           </div>
-          <div className={styles.scrollDown}>
-            <div className={styles.mouse}>
-              <div className={styles.wheel}></div>
-            </div>
-            <span>Przewiń</span>
+        </div>
+        <div className={styles.scrollDown}>
+          <div className={styles.mouse}>
+            <div className={styles.wheel}></div>
           </div>
+          <span>Przewiń</span>
         </div>
       </section>
 
