@@ -57,11 +57,11 @@ export default async function BlogPage() {
                             )}
 
                             <div style={{ padding: '2rem' }}>
-                                <div style={{ fontSize: '0.9rem', color: 'var(--primary)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
+                                <div style={{ fontSize: '0.9rem', color: 'var(--primary)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: '700' }}>
                                     {item.date}
                                 </div>
-                                <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: '#fff' }}>{item.title}</h2>
-                                <div style={{ lineHeight: '1.8', color: '#ccc', whiteSpace: 'pre-wrap' }}>
+                                <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: '#111', fontWeight: '800' }}>{item.title}</h2>
+                                <div style={{ lineHeight: '1.8', color: '#555', whiteSpace: 'pre-wrap' }}>
                                     {item.content}
                                 </div>
                             </div>

@@ -45,19 +45,19 @@ export default async function InvestmentsPage() {
                                         src={inv.images[0]}
                                         alt={inv.name}
                                         fill
-                                        style={{ objectFit: 'cover', borderRadius: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
+                                        style={{ objectFit: 'cover', borderRadius: '8px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}
                                         sizes="(max-width: 768px) 100vw, 50vw"
                                     />
                                 ) : (
                                     <div style={{
                                         height: '100%',
                                         width: '100%',
-                                        background: '#222',
+                                        background: '#f0f0f0',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         borderRadius: '8px',
-                                        color: '#555'
+                                        color: '#999'
                                     }}>
                                         Brak zdjęcia
                                     </div>
@@ -65,11 +65,11 @@ export default async function InvestmentsPage() {
                             </div>
 
                             <div style={{ direction: 'ltr' }}>
-                                <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--primary)' }}>{inv.name}</h2>
-                                <p style={{ fontSize: '1.2rem', color: '#aaa', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <h2 style={{ fontSize: '2.2rem', marginBottom: '1rem', color: '#111', fontWeight: '800' }}>{inv.name}</h2>
+                                <p style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}>
                                     📍 {inv.location}
                                 </p>
-                                <p style={{ lineHeight: '1.8', color: '#ccc', marginBottom: '2rem' }}>
+                                <p style={{ lineHeight: '1.8', color: '#555', marginBottom: '2rem' }}>
                                     {inv.description}
                                 </p>
                                 <Link href="/kontakt" className="btn">
