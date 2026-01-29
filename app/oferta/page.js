@@ -4,6 +4,8 @@ import Footer from '@/components/Footer';
 import ApartmentCard from '@/components/ApartmentCard';
 import { supabase } from '@/lib/supabase';
 
+import styles from '../page.module.css';
+
 export const dynamic = 'force-dynamic';
 
 async function getApartments() {
@@ -27,8 +29,8 @@ export default async function OfferPage() {
     return (
         <main>
             <Navbar />
-            <div style={{ paddingTop: '120px', minHeight: '80vh' }} className="container section">
-                <h1 style={{ marginBottom: '3rem', fontSize: '2.5rem', fontFamily: 'var(--font-heading)' }}>Pełna Oferta</h1>
+            <div style={{ paddingTop: '140px', minHeight: '80vh' }} className="container section">
+                <h1 className={styles.sectionTitle} style={{ textAlign: 'left', marginBottom: '4rem' }}>Pełna Oferta</h1>
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
