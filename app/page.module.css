@@ -407,6 +407,11 @@
     grid-template-columns: 1fr;
   }
 
+  .whyUsGrid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
   .contactFormCard {
     padding: 2rem 1.5rem;
   }
