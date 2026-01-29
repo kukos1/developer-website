@@ -119,14 +119,14 @@ export default async function Home() {
             <p style={{ color: '#888', gridColumn: '1 / -1', textAlign: 'center' }}>Brak inwestycji do wyświetlenia.</p>
           )}
         </div>
-        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+        <div style={{ textAlign: 'center', marginTop: '4rem' }}>
           <Link href="/inwestycje" className="btn btnOutline">
             Wszystkie Inwestycje
           </Link>
         </div>
       </section>
 
-      <section className="section" style={{ backgroundColor: 'var(--card-bg)' }}>
+      <section className="section" style={{ backgroundColor: '#fbfbfc', borderTop: '1px solid #eee', borderBottom: '1px solid #eee' }}>
         <div className="container">
           <h2 className={styles.sectionTitle}>Aktualna Oferta Mieszkań</h2>
           <div className={styles.featuredGrid}>
@@ -137,8 +137,8 @@ export default async function Home() {
           {featuredApartments.length === 0 && (
             <p style={{ color: '#888', textAlign: 'center', marginTop: '2rem' }}>Wszystkie mieszkania zostały sprzedane. Sprawdź nasze inwestycje!</p>
           )}
-          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-            <Link href="/oferta" className="btn">
+          <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+            <Link href="/oferta" className="btn shimmer">
               Wszystkie Mieszkania
             </Link>
           </div>
