@@ -4,6 +4,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
 
+import styles from '../page.module.css';
+
 export const dynamic = 'force-dynamic';
 
 async function getNews() {
@@ -27,18 +29,19 @@ export default async function BlogPage() {
     return (
         <main>
             <Navbar />
-            <section className="section container" style={{ paddingTop: '120px' }}>
-                <h1 style={{ marginBottom: '3rem', textAlign: 'center', fontSize: '2.5rem' }}>Aktualności</h1>
+            <section className="section container" style={{ paddingTop: '140px' }}>
+                <h1 className={styles.sectionTitle} style={{ textAlign: 'left', marginBottom: '4rem' }}>Aktualności</h1>
 
-                <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+                <div style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '4rem' }}>
                     {news.map((item) => (
                         <article key={item.id} style={{
-                            background: 'var(--card-bg)',
-                            borderRadius: '8px',
+                            background: '#fff',
+                            borderRadius: '16px',
                             overflow: 'hidden',
-                            border: '1px solid var(--card-border)',
+                            border: '1px solid #eee',
                             display: 'flex',
-                            flexDirection: 'column'
+                            flexDirection: 'column',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
                         }}>
                             {item.image && (
                                 <div style={{

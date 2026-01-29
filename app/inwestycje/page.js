@@ -4,6 +4,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
 
+import styles from '../page.module.css';
+
 export const dynamic = 'force-dynamic';
 
 async function getInvestments() {
@@ -27,8 +29,8 @@ export default async function InvestmentsPage() {
     return (
         <main>
             <Navbar />
-            <section className="section container" style={{ paddingTop: '120px' }}>
-                <h1 style={{ marginBottom: '3rem', textAlign: 'center', fontSize: '2.5rem' }}>Nasze Inwestycje</h1>
+            <section className="section container" style={{ paddingTop: '140px' }}>
+                <h1 className={styles.sectionTitle} style={{ textAlign: 'left', marginBottom: '4rem' }}>Nasze Inwestycje</h1>
 
                 <div style={{ display: 'grid', gap: '4rem' }}>
                     {investments.map((inv, index) => (
