@@ -416,3 +416,98 @@
     padding: 2rem 1.5rem;
   }
 }
+
+/* Utilities & Refactoring */
+.pt140 {
+  padding-top: 140px;
+}
+
+.textLeft {
+  text-align: left;
+}
+
+.mb4 {
+  margin-bottom: 4rem;
+}
+
+.contactHeading {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.companyName {
+  margin-bottom: 0.5rem;
+  color: #111;
+  font-weight: 700;
+}
+
+.mb05 {
+  margin-bottom: 0.5rem;
+}
+
+.mb15 {
+  margin-bottom: 1.5rem;
+}
+
+.mt2 {
+  margin-top: 2rem;
+}
+
+.textSmallGray {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.mapContainer {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.mapFrame {
+  border: 0;
+  display: block;
+  width: 100%;
+  height: 300px;
+}
+
+/* Home Page Specifics */
+.investmentImageWrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.noInvestments, .noApartments {
+  color: #888;
+  grid-column: 1 / -1;
+  text-align: center;
+}
+
+.noApartments {
+  margin-top: 2rem;
+}
+
+.centerMt4 {
+  text-align: center;
+  margin-top: 4rem;
+}
+
+.bgLight {
+  background-color: #fbfbfc;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.successMessage {
+  padding: 1.5rem;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 8px;
+  border: 1px solid #c8e6c9;
+  font-weight: 600;
+}
+
+.fullWidth {
+  width: 100%;
+}

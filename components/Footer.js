@@ -29,8 +29,12 @@ export default function Footer() {
                     <div>
                         <h4 className={styles.footerTitle}>Kontakt</h4>
                         <p className={styles.footerContact}>
-                            Tel: +48 123 456 789<br />
-                            Email: biuro@pawelsoldanski.pl
+                            <strong>Gorzewo 31C</strong><br />
+                            09-200 Sierpc<br /><br />
+                            Tel: 884-869-402<br />
+                            Tel: 728-863-971<br />
+                            Email: solbet@wp.pl<br /><br />
+                            NIP: 7761235157
                         </p>
                     </div>
                 </div>

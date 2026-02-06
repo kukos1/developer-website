@@ -22,32 +22,29 @@ export default function ContactPage() {
     return (
         <main>
             <Navbar />
-            <div className="container section" style={{ paddingTop: '140px' }}>
-                <h1 className={styles.sectionTitle} style={{ textAlign: 'left', marginBottom: '4rem' }}>Kontakt</h1>
+            <div className={`container section ${styles.pt140}`}>
+                <h1 className={`${styles.sectionTitle} ${styles.textLeft} ${styles.mb4}`}>Kontakt</h1>
 
                 <div className={styles.contactGrid}>
                     <div className={styles.contactInfo}>
-                        <h2 style={{ color: 'var(--primary)', fontWeight: '800' }}>Skontaktuj się z nami</h2>
+                        <h2 className={styles.contactHeading}>Skontaktuj się z nami</h2>
                         <div className={styles.contactDetails}>
-                            <p style={{ marginBottom: '0.5rem', color: '#111', fontWeight: '700' }}>PAWEŁ SOŁDAŃSKI</p>
-                            <p style={{ marginBottom: '0.5rem' }}>ul. Przykładowa 123</p>
-                            <p style={{ marginBottom: '1.5rem' }}>00-001 Warszawa</p>
+                            <p className={styles.companyName}>PAWEŁ SOŁDAŃSKI</p>
+                            <p className={styles.mb05}>Gorzewo 31C</p>
+                            <p className={styles.mb15}>09-200 Sierpc</p>
 
-                            <p style={{ marginBottom: '0.5rem' }}><strong>Tel:</strong> +48 123 456 789</p>
-                            <p style={{ marginBottom: '1.5rem' }}><strong>Email:</strong> biuro@pawelsoldanski.pl</p>
+                            <p className={styles.mb05}><strong>Tel:</strong> 884-869-402 / 728-863-971</p>
+                            <p className={styles.mb15}><strong>Email:</strong> solbet@wp.pl</p>
 
-                            <p style={{ fontSize: '0.9rem', color: '#777', marginTop: '2rem' }}>
-                                NIP: 123-456-78-90<br />
-                                REGON: 123456789
+                            <p className={`${styles.textSmallGray} ${styles.mt2}`}>
+                                NIP: 7761235157
                             </p>
                         </div>
 
-                        <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid #eee', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+                        <div className={styles.mapContainer}>
                             <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2443.804820625983!2d21.01222871579664!3d52.22967567976077!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471ecc669a869f01%3A0x72f0be2a88ead3fc!2sPa%C5%82ac%20Kultury%20i%20Nauki!5e0!3m2!1spl!2spl!4v1647864321234!5m2!1spl!2spl"
-                                width="100%"
-                                height="300"
-                                style={{ border: 0, display: 'block' }}
+                                src="https://maps.google.com/maps?q=Gorzewo+31C,+09-200+Sierpc&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                                className={styles.mapFrame}
                                 allowFullScreen=""
                                 loading="lazy">
                             </iframe>
@@ -57,7 +54,7 @@ export default function ContactPage() {
                     <div className={styles.contactFormCard}>
                         <h3>Napisz do nas</h3>
                         {submitted ? (
-                            <div style={{ padding: '1.5rem', backgroundColor: '#e8f5e9', color: '#2e7d32', borderRadius: '8px', border: '1px solid #c8e6c9', fontWeight: '600' }}>
+                            <div className={styles.successMessage}>
                                 ✨ Dziękujemy za wiadomość! Skontaktujemy się z Tobą wkrótce.
                             </div>
                         ) : (
@@ -89,7 +86,7 @@ export default function ContactPage() {
                                     onChange={handleChange}
                                     className={styles.formInput}
                                 ></textarea>
-                                <button type="submit" className="btn shimmer" style={{ width: '100%' }}>Wyślij Wiadomość</button>
+                                <button type="submit" className={`btn shimmer ${styles.fullWidth}`}>Wyślij Wiadomość</button>
                             </form>
                         )}
                     </div>

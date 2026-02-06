@@ -97,7 +97,7 @@ export default async function Home() {
           {featuredInvestments.map((inv) => (
             <Link href="/inwestycje" key={inv.id} className={styles.investmentCard}>
               {inv.images && inv.images.length > 0 && (
-                <div className={styles.investmentImage} style={{ position: 'relative', overflow: 'hidden' }}>
+                <div className={`${styles.investmentImage} ${styles.investmentImageWrapper}`}>
                   <Image
                     src={inv.images[0]}
                     alt={inv.name}
@@ -116,17 +116,17 @@ export default async function Home() {
             </Link>
           ))}
           {featuredInvestments.length === 0 && (
-            <p style={{ color: '#888', gridColumn: '1 / -1', textAlign: 'center' }}>Brak inwestycji do wyświetlenia.</p>
+            <p className={styles.noInvestments}>Brak inwestycji do wyświetlenia.</p>
           )}
         </div>
-        <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+        <div className={styles.centerMt4}>
           <Link href="/inwestycje" className="btn btnOutline">
             Wszystkie Inwestycje
           </Link>
         </div>
       </section>
 
-      <section className="section" style={{ backgroundColor: '#fbfbfc', borderTop: '1px solid #eee', borderBottom: '1px solid #eee' }}>
+      <section className={`section ${styles.bgLight}`}>
         <div className="container">
           <h2 className={styles.sectionTitle}>Aktualna Oferta Mieszkań</h2>
           <div className={styles.featuredGrid}>
@@ -135,9 +135,9 @@ export default async function Home() {
             ))}
           </div>
           {featuredApartments.length === 0 && (
-            <p style={{ color: '#888', textAlign: 'center', marginTop: '2rem' }}>Wszystkie mieszkania zostały sprzedane. Sprawdź nasze inwestycje!</p>
+            <p className={styles.noApartments}>Wszystkie mieszkania zostały sprzedane. Sprawdź nasze inwestycje!</p>
           )}
-          <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+          <div className={styles.centerMt4}>
             <Link href="/oferta" className="btn shimmer">
               Wszystkie Mieszkania
             </Link>
