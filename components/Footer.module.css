@@ -1,78 +1,87 @@
 .footer {
-    background: #f8f9fa;
-    padding: 4rem 0 2rem;
-    border-top: 1px solid #eee;
+    margin-top: 3rem;
+    padding: 4.2rem 0 2rem;
+    color: #d8e4f3;
+    border-top: 1px solid rgba(130, 153, 183, 0.22);
+    background:
+        radial-gradient(circle at 85% 0%, rgba(30, 162, 255, 0.2), transparent 34%),
+        linear-gradient(180deg, #112742 0%, #0b1c34 100%);
 }
 
 .footerGrid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 3rem;
-    margin-bottom: 3rem;
+    grid-template-columns: 2fr 1fr 1fr 1.2fr;
+    gap: 2.4rem;
+    margin-bottom: 2.4rem;
 }
 
 .footerLogo {
-    font-size: 1.5rem;
-    color: #1a1a1a;
+    font-size: 1.45rem;
     margin-bottom: 0.5rem;
+    color: #ffffff;
     font-weight: 800;
 }
 
 .footerTagline {
-    color: var(--primary);
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    color: #6cc5ff;
     text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.95px;
 }
 
 .footerTitle {
-    font-size: 0.9rem;
-    color: #111;
-    margin-bottom: 1.5rem;
+    font-size: 0.82rem;
+    color: #f4f8ff;
+    margin-bottom: 1rem;
     text-transform: uppercase;
-    font-weight: 700;
+    font-weight: 800;
+    letter-spacing: 0.85px;
 }
 
 .footerLinks {
     list-style: none;
-}
-
-.footerLinks li {
-    margin-bottom: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.64rem;
 }
 
 .footerLinks a {
-    color: #555;
-    font-size: 0.9rem;
-    transition: color 0.3s;
+    color: #c6d6ea;
+    font-size: 0.92rem;
+    transition: color 0.2s ease;
 }
 
 .footerLinks a:hover {
-    color: var(--primary);
+    color: #7cc9ff;
 }
 
 .footerContact {
-    color: #555;
+    color: #c6d6ea;
     font-size: 0.9rem;
-    line-height: 1.8;
+    line-height: 1.75;
 }
 
 .footerBottom {
-    border-top: 1px solid #eee;
-    padding-top: 2rem;
+    border-top: 1px solid rgba(138, 161, 192, 0.22);
+    padding-top: 1.2rem;
     text-align: center;
-    color: #888;
-    font-size: 0.85rem;
+    color: #9bb1cb;
+    font-size: 0.82rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .footerGrid {
         grid-template-columns: 1fr 1fr;
-        gap: 2rem;
+        gap: 1.8rem;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
+    .footer {
+        padding-top: 3.4rem;
+    }
+
     .footerGrid {
         grid-template-columns: 1fr;
     }

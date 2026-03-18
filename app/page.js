@@ -41,8 +41,9 @@ async function getInvestments() {
 export default async function Home() {
   const apartments = await getApartments();
   const investments = await getInvestments();
-  const featuredApartments = (apartments || []).filter(a => a.status === 'available').slice(0, 3);
-  const featuredInvestments = (investments || []).slice(0, 3);
+
+  const featuredApartments = apartments.filter((item) => item.status === 'available').slice(0, 3);
+  const featuredInvestments = investments.slice(0, 3);
 
   return (
     <main>
@@ -51,14 +52,21 @@ export default async function Home() {
       <section className={styles.hero}>
         <div className={styles.heroBgDecoration}></div>
         <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>Budujemy Przyszłość,<br />Tworzymy Przestrzeń</h1>
-          <p className={styles.heroSubtitle}>Nowoczesne inwestycje budowlane dopasowane do Twoich potrzeb, które przetrwają pokolenia.</p>
+          <h1 className={styles.heroTitle}>
+            Budujemy przyszlosc,
+            <br />
+            tworzymy przestrzen
+          </h1>
+          <p className={styles.heroSubtitle}>
+            Realizujemy nowoczesne inwestycje mieszkaniowe i komercyjne.
+            Projektujemy miejsca, w ktorych dobrze sie zyje i pracuje.
+          </p>
           <div className={styles.heroBtns}>
             <Link href="/inwestycje" className="btn shimmer">
-              Nasze Inwestycje
+              Nasze inwestycje
             </Link>
             <Link href="/oferta" className="btn btnOutline">
-              Szukaj Mieszkania
+              Zobacz mieszkania
             </Link>
           </div>
         </div>
@@ -73,34 +81,34 @@ export default async function Home() {
         <div className="container">
           <div className={styles.whyUsGrid}>
             <div className={styles.whyUsItem}>
-              <div className={styles.whyUsIcon}>🏗️</div>
-              <h3>Solidność</h3>
-              <p>Ponad 15 lat doświadczenia w realizacji najbardziej wymagających projektów budowlanych.</p>
+              <div className={styles.whyUsIcon}>01</div>
+              <h3>Doswiadczenie</h3>
+              <p>Ponad 15 lat praktyki i sprawdzony proces realizacji od projektu po finalny odbior.</p>
             </div>
             <div className={styles.whyUsItem}>
-              <div className={styles.whyUsIcon}>✨</div>
-              <h3>Nowoczesność</h3>
-              <p>Wykorzystujemy najnowsze technologie i materiały premium dla Twojego komfortu.</p>
+              <div className={styles.whyUsIcon}>02</div>
+              <h3>Jakosc</h3>
+              <p>Stawiamy na trwale materialy, funkcjonalne uklady i wysoki standard wykonania.</p>
             </div>
             <div className={styles.whyUsItem}>
-              <div className={styles.whyUsIcon}>🤝</div>
-              <h3>Zaufanie</h3>
-              <p>Setki zadowolonych rodzin, które odnalazły swój wymarzony dom w naszych inwestycjach.</p>
+              <div className={styles.whyUsIcon}>03</div>
+              <h3>Wsparcie</h3>
+              <p>Prowadzimy klienta przez caly proces zakupu i pomagamy dopasowac najlepsza oferte.</p>
             </div>
           </div>
         </div>
       </section>
 
       <section id="inwestycje" className="section container">
-        <h2 className={styles.sectionTitle}>Nasze Inwestycje</h2>
+        <h2 className={styles.sectionTitle}>Nasze inwestycje</h2>
         <div className={styles.featuredGrid}>
-          {featuredInvestments.map((inv) => (
-            <Link href="/inwestycje" key={inv.id} className={styles.investmentCard}>
-              {inv.images && inv.images.length > 0 && (
+          {featuredInvestments.map((investment) => (
+            <Link href="/inwestycje" key={investment.id} className={styles.investmentCard}>
+              {Array.isArray(investment.images) && investment.images.length > 0 && (
                 <div className={`${styles.investmentImage} ${styles.investmentImageWrapper}`}>
                   <Image
-                    src={inv.images[0]}
-                    alt={inv.name}
+                    src={investment.images[0]}
+                    alt={investment.name || 'Inwestycja'}
                     fill
                     style={{ objectFit: 'cover' }}
                     sizes="(max-width: 768px) 100vw, 33vw"
@@ -108,38 +116,46 @@ export default async function Home() {
                 </div>
               )}
               <div className={styles.investmentContent}>
-                <h3>{inv.name}</h3>
-                <p className={styles.investmentLocation}>📍 {inv.location}</p>
-                <p className={styles.investmentDesc}>{inv.description}</p>
-                <span className={styles.investmentLink}>Zobacz szczegóły →</span>
+                <h3>{investment.name || 'Inwestycja'}</h3>
+                <p className={styles.investmentLocation}>Lokalizacja: {investment.location || 'w przygotowaniu'}</p>
+                <p className={styles.investmentDesc}>
+                  {investment.description || 'Szczegoly inwestycji pojawia sie wkrotce.'}
+                </p>
+                <span className={styles.investmentLink}>Poznaj szczegoly</span>
               </div>
             </Link>
           ))}
           {featuredInvestments.length === 0 && (
-            <p className={styles.noInvestments}>Brak inwestycji do wyświetlenia.</p>
+            <p className={styles.noInvestments}>Brak inwestycji do wyswietlenia.</p>
           )}
         </div>
         <div className={styles.centerMt4}>
           <Link href="/inwestycje" className="btn btnOutline">
-            Wszystkie Inwestycje
+            Wszystkie inwestycje
           </Link>
         </div>
       </section>
 
       <section className={`section ${styles.bgLight}`}>
         <div className="container">
-          <h2 className={styles.sectionTitle}>Aktualna Oferta Mieszkań</h2>
+          <h2 className={styles.sectionTitle}>Aktualna oferta mieszkan</h2>
           <div className={styles.featuredGrid}>
-            {featuredApartments.map((apt) => (
-              <ApartmentCard key={apt.id} apartment={apt} />
+            {featuredApartments.map((apartment) => (
+              <ApartmentCard
+                key={apartment.id}
+                apartment={apartment}
+                detailsHref={`/oferta/${apartment.id}`}
+              />
             ))}
           </div>
           {featuredApartments.length === 0 && (
-            <p className={styles.noApartments}>Wszystkie mieszkania zostały sprzedane. Sprawdź nasze inwestycje!</p>
+            <p className={styles.noApartments}>
+              Aktualnie nie mamy mieszkan ze statusem &quot;dostepne&quot;. Skontaktuj sie z nami po oferte indywidualna.
+            </p>
           )}
           <div className={styles.centerMt4}>
             <Link href="/oferta" className="btn shimmer">
-              Wszystkie Mieszkania
+              Wszystkie mieszkania
             </Link>
           </div>
         </div>

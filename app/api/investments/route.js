@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { collectImageUrls } from '@/lib/storageUploads';
+import { isAdminRequestAuthorized } from '@/lib/adminAuth';
 
 export const runtime = 'nodejs';
 
@@ -26,6 +27,10 @@ export async function GET() {
 }
 
 export async function POST(request) {
+    if (!isAdminRequestAuthorized(request)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         const formData = await request.formData();
         const name = formData.get('name');
@@ -64,6 +69,10 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
+    if (!isAdminRequestAuthorized(request)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         const formData = await request.formData();
         const id = formData.get('id');
@@ -106,6 +115,10 @@ export async function PUT(request) {
 }
 
 export async function DELETE(request) {
+    if (!isAdminRequestAuthorized(request)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');

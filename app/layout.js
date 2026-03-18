@@ -1,21 +1,21 @@
-import { Inter, Playfair_Display } from "next/font/google";
-import "./globals.css";
+import { Inter, Playfair_Display } from 'next/font/google';
+import './globals.css';
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-body",
-  display: "swap",
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap'
 });
 
 const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-heading",
-  display: "swap",
+  subsets: ['latin'],
+  variable: '--font-heading',
+  display: 'swap'
 });
 
 export const metadata = {
-  title: "PAWEŁ SOŁDAŃSKI - Nowoczesne Inwestycje Budowlane",
-  description: "Budujemy przyszłość, tworzymy przestrzeń.",
+  title: 'PAWEL SOLDANSKI - Nowoczesne Inwestycje Budowlane',
+  description: 'Budujemy przyszlosc, tworzymy przestrzen.'
 };
 
 export default function RootLayout({ children }) {

@@ -1,17 +1,62 @@
 'use client';
+
+import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import styles from './ApartmentCard.module.css';
 
-export default function ApartmentCard({ apartment }) {
+const STATUS_TEXT = {
+    available: 'Dostepne',
+    reserved: 'Zarezerwowane',
+    sold: 'Sprzedane'
+};
+
+const STATUS_CLASS = {
+    available: styles.statusAvailable,
+    reserved: styles.statusReserved,
+    sold: styles.statusSold
+};
+
+function toNumber(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeImages(apartment) {
+    const directImages = Array.isArray(apartment.images) ? apartment.images : [];
+    const fallbackImage = apartment.image_url || apartment.imageUrl;
+
+    if (directImages.length > 0) {
+        return directImages.filter((item) => typeof item === 'string' && item.trim().length > 0);
+    }
+
+    return fallbackImage ? [fallbackImage] : [];
+}
+
+function formatPrice(price) {
+    const value = toNumber(price);
+    if (value == null) return 'Cena do ustalenia';
+    return new Intl.NumberFormat('pl-PL', {
+        style: 'currency',
+        currency: 'PLN',
+        maximumFractionDigits: 0
+    }).format(value);
+}
+
+export default function ApartmentCard({
+    apartment,
+    detailsHref = '',
+    expandable = false
+}) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isExpanded, setIsExpanded] = useState(false);
 
-    // Normalize images: use 'images' array if valid, otherwise fallback to 'imageUrl' as single item array, or empty
-    const images = apartment.images && apartment.images.length > 0
-        ? apartment.images
-        : (apartment.imageUrl ? [apartment.imageUrl] : []);
-
+    const images = useMemo(() => normalizeImages(apartment), [apartment]);
     const hasMultipleImages = images.length > 1;
+
+    const rooms = toNumber(apartment.rooms);
+    const area = toNumber(apartment.area);
+    const floor = toNumber(apartment.floor);
 
     const nextImage = (e) => {
         e.preventDefault();
@@ -25,29 +70,15 @@ export default function ApartmentCard({ apartment }) {
         setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
     };
 
-    const statusClass = {
-        available: styles.statusAvailable,
-        reserved: styles.statusReserved,
-        sold: styles.statusSold,
-    };
-
-    const statusText = {
-        available: 'Dostępne',
-        reserved: 'Zarezerwowane',
-        sold: 'Sprzedane',
-    };
-
-    const formatPrice = (price) => {
-        return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN', maximumFractionDigits: 0 }).format(price);
-    };
+    const toggleExpanded = () => setIsExpanded((prev) => !prev);
 
     return (
-        <div className={styles.card}>
+        <article className={`${styles.card} ${isExpanded ? styles.cardExpanded : ''}`}>
             <div className={styles.imageContainer}>
                 {images.length > 0 ? (
                     <Image
                         src={images[currentIndex]}
-                        alt={apartment.name}
+                        alt={apartment.name || 'Mieszkanie'}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className={styles.apartmentImage}
@@ -55,16 +86,16 @@ export default function ApartmentCard({ apartment }) {
                     />
                 ) : (
                     <div className={styles.imagePlaceholder}>
-                        Wizualizacja Apartamentu
+                        Wizualizacja mieszkania
                     </div>
                 )}
 
                 {hasMultipleImages && (
                     <>
-                        <button className={`${styles.sliderBtn} ${styles.prevBtn}`} onClick={prevImage} title="Poprzednie">
+                        <button type="button" className={`${styles.sliderBtn} ${styles.prevBtn}`} onClick={prevImage} aria-label="Poprzednie zdjecie">
                             &lt;
                         </button>
-                        <button className={`${styles.sliderBtn} ${styles.nextBtn}`} onClick={nextImage} title="Następne">
+                        <button type="button" className={`${styles.sliderBtn} ${styles.nextBtn}`} onClick={nextImage} aria-label="Nastepne zdjecie">
                             &gt;
                         </button>
                         <div className={styles.imageCounter}>
@@ -75,18 +106,37 @@ export default function ApartmentCard({ apartment }) {
             </div>
 
             <div className={styles.content}>
-                <div className={`${styles.status} ${statusClass[apartment.status]}`}>
-                    {statusText[apartment.status]}
+                <div className={`${styles.status} ${STATUS_CLASS[apartment.status] || ''}`}>
+                    {STATUS_TEXT[apartment.status] || 'Nieznany status'}
                 </div>
-                <h3 className={styles.title}>{apartment.name}</h3>
+
+                <h3 className={styles.title}>{apartment.name || 'Mieszkanie'}</h3>
+
                 <div className={styles.details}>
-                    <span>{apartment.rooms} pok.</span>
-                    <span>{apartment.area} m²</span>
-                    <span>Piętro {apartment.floor}</span>
+                    <span>{rooms != null ? `${rooms} pok.` : 'Brak danych'}</span>
+                    <span>{area != null ? `${area} m2` : 'Brak metrazu'}</span>
+                    <span>{floor != null ? `Pietro ${floor}` : 'Pietro ?'}</span>
                 </div>
+
                 <div className={styles.price}>{formatPrice(apartment.price)}</div>
-                <p className={styles.description}>{apartment.description}</p>
+
+                <p className={`${styles.description} ${isExpanded ? styles.descriptionExpanded : ''}`}>
+                    {apartment.description || 'Opis mieszkania bedzie dostepny wkrotce.'}
+                </p>
+
+                <div className={styles.actionRow}>
+                    {expandable && (
+                        <button type="button" className={styles.expandBtn} onClick={toggleExpanded}>
+                            {isExpanded ? 'Zwin opis' : 'Rozwin opis'}
+                        </button>
+                    )}
+                    {detailsHref && (
+                        <Link href={detailsHref} className={styles.detailsLink}>
+                            Przejdz do podstrony
+                        </Link>
+                    )}
+                </div>
             </div>
-        </div>
+        </article>
     );
 }

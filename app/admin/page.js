@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
@@ -20,35 +21,115 @@ function sanitizeFileName(fileName) {
         .replace(/^-|-$/g, '');
 }
 
-// --- MAIN PAGE ---
+async function toJsonOrNull(response) {
+    try {
+        return await response.json();
+    } catch {
+        return null;
+    }
+}
+
+async function requestJson(url, options = {}) {
+    const response = await fetch(url, {
+        credentials: 'same-origin',
+        ...options
+    });
+    const payload = await toJsonOrNull(response);
+
+    if (!response.ok) {
+        const message = payload?.error || `Request failed (${response.status})`;
+        throw new Error(message);
+    }
+
+    return payload;
+}
+
 export default function AdminPage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [authReady, setAuthReady] = useState(false);
     const [password, setPassword] = useState('');
+    const [authError, setAuthError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleLogin = (e) => {
+    useEffect(() => {
+        let isActive = true;
+
+        const checkSession = async () => {
+            try {
+                const payload = await requestJson('/api/admin/session', {
+                    method: 'GET',
+                    cache: 'no-store'
+                });
+                if (isActive) setIsAuthenticated(Boolean(payload?.authenticated));
+            } catch (error) {
+                console.error('Session check failed:', error);
+                if (isActive) setIsAuthenticated(false);
+            } finally {
+                if (isActive) setAuthReady(true);
+            }
+        };
+
+        void checkSession();
+        return () => { isActive = false; };
+    }, []);
+
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (password === 'admin123') {
+        setAuthError('');
+        setIsSubmitting(true);
+
+        try {
+            await requestJson('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+
             setIsAuthenticated(true);
-        } else {
-            alert('Nieprawidłowe hasło');
+            setPassword('');
+        } catch (error) {
+            setAuthError(error?.message || 'Login failed.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
+    const handleLogout = async () => {
+        try {
+            await requestJson('/api/admin/logout', { method: 'POST' });
+        } catch (error) {
+            console.error('Logout failed:', error);
+        } finally {
+            setIsAuthenticated(false);
+        }
+    };
+
+    if (!authReady) {
+        return (
+            <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
+                <p>Sprawdzanie sesji administratora...</p>
+            </main>
+        );
+    }
 
     if (!isAuthenticated) {
         return (
             <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <Navbar />
-                <div className="container" style={{ maxWidth: '400px', marginTop: '100px' }}>
-                    <h1 style={{ marginBottom: '2rem', textAlign: 'center' }}>Panel Administratora</h1>
-                    <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="container" style={{ maxWidth: '420px', marginTop: '100px' }}>
+                    <h1 style={{ marginBottom: '1.4rem', textAlign: 'center' }}>Panel administratora</h1>
+                    <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
                         <input
                             type="password"
-                            placeholder="Hasło"
+                            placeholder="Haslo"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #333', background: '#111', color: 'white' }}
+                            style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #333', background: '#111', color: '#fff' }}
                         />
-                        <button type="submit" className="btn" style={{ width: '100%' }}>Zaloguj</button>
+                        {authError && <p style={{ color: '#e66', fontSize: '0.9rem' }}>{authError}</p>}
+                        <button type="submit" className="btn" style={{ width: '100%' }} disabled={isSubmitting}>
+                            {isSubmitting ? 'Logowanie...' : 'Zaloguj'}
+                        </button>
                     </form>
                 </div>
                 <Footer />
@@ -60,35 +141,38 @@ export default function AdminPage() {
         <main>
             <Navbar />
             <div className="container section" style={{ paddingTop: '120px' }}>
-                <AdminContent />
+                <AdminContent onLogout={handleLogout} />
             </div>
             <Footer />
         </main>
     );
 }
 
-// --- TABBED CONTENT ---
-function AdminContent() {
+function AdminContent({ onLogout }) {
     const [activeTab, setActiveTab] = useState('apartments');
 
     const tabStyle = (tabName) => ({
         appearance: 'none',
         backgroundColor: 'transparent',
-        padding: '1rem 2rem',
+        padding: '1rem 1.7rem',
         cursor: 'pointer',
-        background: activeTab === tabName ? 'var(--primary)' : 'transparent',
-        color: activeTab === tabName ? '#000' : '#888',
-        border: `1px solid ${activeTab === tabName ? 'var(--primary)' : '#333'}`,
+        color: activeTab === tabName ? '#001b34' : '#667',
+        border: `1px solid ${activeTab === tabName ? 'var(--primary)' : '#c4d3e3'}`,
+        background: activeTab === tabName ? 'rgba(0, 111, 219, 0.2)' : 'rgba(255,255,255,0.65)',
         borderBottom: 'none',
-        borderRadius: '8px 8px 0 0',
-        fontWeight: 'bold',
-        transition: 'all 0.3s'
+        borderRadius: '10px 10px 0 0',
+        fontWeight: 700,
+        transition: 'all 0.2s ease'
     });
 
     return (
         <div>
-            <h1 style={{ marginBottom: '2rem' }}>Zarządzanie Treścią</h1>
-            <div style={{ display: 'flex', borderBottom: '1px solid #333', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                <h1 style={{ margin: 0 }}>Zarzadzanie trescia</h1>
+                <button type="button" className="btn btnOutline" onClick={onLogout}>Wyloguj</button>
+            </div>
+
+            <div style={{ display: 'flex', borderBottom: '1px solid #c4d3e3', marginBottom: '2rem', flexWrap: 'wrap', gap: '0.3rem' }}>
                 <button type="button" onClick={() => setActiveTab('apartments')} style={tabStyle('apartments')}>Mieszkania</button>
                 <button type="button" onClick={() => setActiveTab('investments')} style={tabStyle('investments')}>Inwestycje</button>
                 <button type="button" onClick={() => setActiveTab('blog')} style={tabStyle('blog')}>Blog / News</button>
@@ -101,55 +185,58 @@ function AdminContent() {
     );
 }
 
-// --- APARTMENTS MANAGER ---
 function ApartmentsManager() {
     const [items, setItems] = useState([]);
-    const [view, setView] = useState('list'); // 'list' | 'form'
+    const [view, setView] = useState('list');
     const [editingItem, setEditingItem] = useState(null);
 
-    async function fetchItems() {
-        const res = await fetch('/api/apartments');
-        if (res.ok) setItems(await res.json());
-    }
+    const fetchItems = async () => {
+        try {
+            const payload = await requestJson('/api/apartments');
+            setItems(Array.isArray(payload) ? payload : []);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     useEffect(() => {
         let isActive = true;
 
         const loadItems = async () => {
-            const res = await fetch('/api/apartments');
-            if (!res.ok || !isActive) return;
-            const data = await res.json();
-            if (isActive) setItems(data);
+            try {
+                const payload = await requestJson('/api/apartments');
+                if (isActive) setItems(Array.isArray(payload) ? payload : []);
+            } catch (error) {
+                console.error(error);
+            }
         };
 
         void loadItems();
-
         return () => { isActive = false; };
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm('Usunąć?')) return;
-        await fetch(`/api/apartments?id=${id}`, { method: 'DELETE' });
-        fetchItems();
+        if (!confirm('Usunac ten rekord?')) return;
+        await requestJson(`/api/apartments?id=${id}`, { method: 'DELETE' });
+        await fetchItems();
     };
 
     return (
         <div>
             {view === 'list' ? (
                 <>
-                    <button className="btn" onClick={() => { setEditingItem(null); setView('form'); }} style={{ marginBottom: '1rem' }}>Dodaj Mieszkanie</button>
+                    <button className="btn" onClick={() => { setEditingItem(null); setView('form'); }} style={{ marginBottom: '1rem' }}>
+                        Dodaj mieszkanie
+                    </button>
                     <div style={{ display: 'grid', gap: '1rem' }}>
-                        {items.map(item => (
-                            <div key={item.id} style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <strong style={{ color: 'var(--primary)' }}>{item.name}</strong>
-                                    <span style={{ marginLeft: '1rem', color: '#888', fontSize: '0.9rem' }}>{item.status}</span>
-                                </div>
-                                <div>
-                                    <button onClick={() => { setEditingItem(item); setView('form'); }} style={{ marginRight: '1rem', cursor: 'pointer', background: 'none', border: 'none', color: '#fff' }}>Edytuj</button>
-                                    <button onClick={() => handleDelete(item.id)} style={{ cursor: 'pointer', background: 'none', border: 'none', color: '#e74c3c' }}>Usuń</button>
-                                </div>
-                            </div>
+                        {items.map((item) => (
+                            <RecordRow
+                                key={item.id}
+                                title={item.name}
+                                subtitle={item.status}
+                                onEdit={() => { setEditingItem(item); setView('form'); }}
+                                onDelete={() => void handleDelete(item.id)}
+                            />
                         ))}
                         {items.length === 0 && <p>Brak danych.</p>}
                     </div>
@@ -158,17 +245,17 @@ function ApartmentsManager() {
                 <GenericForm
                     endpoint="/api/apartments"
                     initialData={editingItem}
-                    onSuccess={() => { fetchItems(); setView('list'); }}
+                    onSuccess={() => { void fetchItems(); setView('list'); }}
                     onCancel={() => setView('list')}
                     fields={[
                         { name: 'name', label: 'Nazwa / Numer', type: 'text' },
-                        { name: 'floor', label: 'Piętro', type: 'number' },
+                        { name: 'floor', label: 'Pietro', type: 'number' },
                         { name: 'rooms', label: 'Pokoje', type: 'number' },
-                        { name: 'area', label: 'Powierzchnia (m²)', type: 'number', step: '0.1' },
+                        { name: 'area', label: 'Powierzchnia (m2)', type: 'number', step: '0.1' },
                         { name: 'price', label: 'Cena (PLN)', type: 'number' },
-                        { name: 'status', label: 'Status', type: 'select', options: [['available', 'Dostępne'], ['reserved', 'Zarezerwowane'], ['sold', 'Sprzedane']] },
+                        { name: 'status', label: 'Status', type: 'select', options: [['available', 'Dostepne'], ['reserved', 'Zarezerwowane'], ['sold', 'Sprzedane']] },
                         { name: 'description', label: 'Opis', type: 'textarea' },
-                        { name: 'images', label: 'Zdjęcia', type: 'file', multiple: true }
+                        { name: 'images', label: 'Zdjecia', type: 'file', multiple: true }
                     ]}
                 />
             )}
@@ -176,55 +263,58 @@ function ApartmentsManager() {
     );
 }
 
-// --- INVESTMENTS MANAGER ---
 function InvestmentsManager() {
     const [items, setItems] = useState([]);
     const [view, setView] = useState('list');
     const [editingItem, setEditingItem] = useState(null);
 
-    async function fetchItems() {
-        const res = await fetch('/api/investments');
-        if (res.ok) setItems(await res.json());
-    }
+    const fetchItems = async () => {
+        try {
+            const payload = await requestJson('/api/investments');
+            setItems(Array.isArray(payload) ? payload : []);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     useEffect(() => {
         let isActive = true;
 
         const loadItems = async () => {
-            const res = await fetch('/api/investments');
-            if (!res.ok || !isActive) return;
-            const data = await res.json();
-            if (isActive) setItems(data);
+            try {
+                const payload = await requestJson('/api/investments');
+                if (isActive) setItems(Array.isArray(payload) ? payload : []);
+            } catch (error) {
+                console.error(error);
+            }
         };
 
         void loadItems();
-
         return () => { isActive = false; };
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm('Usunąć?')) return;
-        await fetch(`/api/investments?id=${id}`, { method: 'DELETE' });
-        fetchItems();
+        if (!confirm('Usunac ten rekord?')) return;
+        await requestJson(`/api/investments?id=${id}`, { method: 'DELETE' });
+        await fetchItems();
     };
 
     return (
         <div>
             {view === 'list' ? (
                 <>
-                    <button className="btn" onClick={() => { setEditingItem(null); setView('form'); }} style={{ marginBottom: '1rem' }}>Dodaj Inwestycję</button>
+                    <button className="btn" onClick={() => { setEditingItem(null); setView('form'); }} style={{ marginBottom: '1rem' }}>
+                        Dodaj inwestycje
+                    </button>
                     <div style={{ display: 'grid', gap: '1rem' }}>
-                        {items.map(item => (
-                            <div key={item.id} style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <strong style={{ color: 'var(--primary)' }}>{item.name}</strong>
-                                    <span style={{ marginLeft: '1rem', color: '#888', fontSize: '0.9rem' }}>{item.location}</span>
-                                </div>
-                                <div>
-                                    <button onClick={() => { setEditingItem(item); setView('form'); }} style={{ marginRight: '1rem', cursor: 'pointer', background: 'none', border: 'none', color: '#fff' }}>Edytuj</button>
-                                    <button onClick={() => handleDelete(item.id)} style={{ cursor: 'pointer', background: 'none', border: 'none', color: '#e74c3c' }}>Usuń</button>
-                                </div>
-                            </div>
+                        {items.map((item) => (
+                            <RecordRow
+                                key={item.id}
+                                title={item.name}
+                                subtitle={item.location}
+                                onEdit={() => { setEditingItem(item); setView('form'); }}
+                                onDelete={() => void handleDelete(item.id)}
+                            />
                         ))}
                         {items.length === 0 && <p>Brak danych.</p>}
                     </div>
@@ -233,13 +323,13 @@ function InvestmentsManager() {
                 <GenericForm
                     endpoint="/api/investments"
                     initialData={editingItem}
-                    onSuccess={() => { fetchItems(); setView('list'); }}
+                    onSuccess={() => { void fetchItems(); setView('list'); }}
                     onCancel={() => setView('list')}
                     fields={[
-                        { name: 'name', label: 'Nazwa Inwestycji', type: 'text' },
+                        { name: 'name', label: 'Nazwa inwestycji', type: 'text' },
                         { name: 'location', label: 'Lokalizacja', type: 'text' },
                         { name: 'description', label: 'Opis', type: 'textarea' },
-                        { name: 'images', label: 'Zdjęcia', type: 'file', multiple: true }
+                        { name: 'images', label: 'Zdjecia', type: 'file', multiple: true }
                     ]}
                 />
             )}
@@ -247,55 +337,58 @@ function InvestmentsManager() {
     );
 }
 
-// --- BLOG MANAGER ---
 function BlogManager() {
     const [items, setItems] = useState([]);
     const [view, setView] = useState('list');
     const [editingItem, setEditingItem] = useState(null);
 
-    async function fetchItems() {
-        const res = await fetch('/api/news');
-        if (res.ok) setItems(await res.json());
-    }
+    const fetchItems = async () => {
+        try {
+            const payload = await requestJson('/api/news');
+            setItems(Array.isArray(payload) ? payload : []);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     useEffect(() => {
         let isActive = true;
 
         const loadItems = async () => {
-            const res = await fetch('/api/news');
-            if (!res.ok || !isActive) return;
-            const data = await res.json();
-            if (isActive) setItems(data);
+            try {
+                const payload = await requestJson('/api/news');
+                if (isActive) setItems(Array.isArray(payload) ? payload : []);
+            } catch (error) {
+                console.error(error);
+            }
         };
 
         void loadItems();
-
         return () => { isActive = false; };
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm('Usunąć?')) return;
-        await fetch(`/api/news?id=${id}`, { method: 'DELETE' });
-        fetchItems();
+        if (!confirm('Usunac ten rekord?')) return;
+        await requestJson(`/api/news?id=${id}`, { method: 'DELETE' });
+        await fetchItems();
     };
 
     return (
         <div>
             {view === 'list' ? (
                 <>
-                    <button className="btn" onClick={() => { setEditingItem(null); setView('form'); }} style={{ marginBottom: '1rem' }}>Dodaj News</button>
+                    <button className="btn" onClick={() => { setEditingItem(null); setView('form'); }} style={{ marginBottom: '1rem' }}>
+                        Dodaj news
+                    </button>
                     <div style={{ display: 'grid', gap: '1rem' }}>
-                        {items.map(item => (
-                            <div key={item.id} style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <strong style={{ color: 'var(--primary)' }}>{item.title}</strong>
-                                    <span style={{ marginLeft: '1rem', color: '#888', fontSize: '0.9rem' }}>{item.date}</span>
-                                </div>
-                                <div>
-                                    <button onClick={() => { setEditingItem(item); setView('form'); }} style={{ marginRight: '1rem', cursor: 'pointer', background: 'none', border: 'none', color: '#fff' }}>Edytuj</button>
-                                    <button onClick={() => handleDelete(item.id)} style={{ cursor: 'pointer', background: 'none', border: 'none', color: '#e74c3c' }}>Usuń</button>
-                                </div>
-                            </div>
+                        {items.map((item) => (
+                            <RecordRow
+                                key={item.id}
+                                title={item.title}
+                                subtitle={item.date}
+                                onEdit={() => { setEditingItem(item); setView('form'); }}
+                                onDelete={() => void handleDelete(item.id)}
+                            />
                         ))}
                         {items.length === 0 && <p>Brak danych.</p>}
                     </div>
@@ -304,13 +397,13 @@ function BlogManager() {
                 <GenericForm
                     endpoint="/api/news"
                     initialData={editingItem}
-                    onSuccess={() => { fetchItems(); setView('list'); }}
+                    onSuccess={() => { void fetchItems(); setView('list'); }}
                     onCancel={() => setView('list')}
                     fields={[
-                        { name: 'title', label: 'Tytuł', type: 'text' },
+                        { name: 'title', label: 'Tytul', type: 'text' },
                         { name: 'date', label: 'Data', type: 'date' },
-                        { name: 'content', label: 'Treść', type: 'textarea' },
-                        { name: 'image', label: 'Zdjęcie główne', type: 'file', multiple: false }
+                        { name: 'content', label: 'Tresc', type: 'textarea' },
+                        { name: 'image', label: 'Zdjecie glowne', type: 'file', multiple: false }
                     ]}
                 />
             )}
@@ -318,7 +411,38 @@ function BlogManager() {
     );
 }
 
-// --- REUSABLE FORM COMPONENT ---
+function RecordRow({ title, subtitle, onEdit, onDelete }) {
+    return (
+        <div
+            style={{
+                background: '#f8fbff',
+                border: '1px solid #d8e4f1',
+                padding: '1rem',
+                borderRadius: '10px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '0.8rem'
+            }}
+        >
+            <div>
+                <strong style={{ color: '#12345c' }}>{title}</strong>
+                {subtitle ? (
+                    <span style={{ marginLeft: '0.8rem', color: '#567', fontSize: '0.9rem' }}>{subtitle}</span>
+                ) : null}
+            </div>
+            <div>
+                <button type="button" onClick={onEdit} style={{ marginRight: '0.8rem', cursor: 'pointer', background: 'none', border: 'none', color: '#12345c', fontWeight: 700 }}>
+                    Edytuj
+                </button>
+                <button type="button" onClick={onDelete} style={{ cursor: 'pointer', background: 'none', border: 'none', color: '#cf2e2e', fontWeight: 700 }}>
+                    Usun
+                </button>
+            </div>
+        </div>
+    );
+}
+
 function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
     const [formData, setFormData] = useState({});
     const [files, setFiles] = useState({});
@@ -329,32 +453,32 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
         if (initialData) {
             setFormData(initialData);
         } else {
-            // Init empty
-            const empty = {};
-            fields.forEach(f => empty[f.name] = '');
-            setFormData(empty);
+            const emptyState = {};
+            fields.forEach((field) => { emptyState[field.name] = ''; });
+            setFormData(emptyState);
         }
+
         setFiles({});
         setSubmitError('');
     }, [initialData, fields]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleFileChange = (e, fieldName) => {
         if (!e.target.files) return;
 
         const selectedFiles = Array.from(e.target.files);
-        const tooLargeFile = selectedFiles.find(file => file.size > MAX_FILE_SIZE_BYTES);
+        const tooLargeFile = selectedFiles.find((file) => file.size > MAX_FILE_SIZE_BYTES);
         if (tooLargeFile) {
             alert(`Plik "${tooLargeFile.name}" przekracza limit 50MB.`);
             e.target.value = '';
             return;
         }
 
-        setFiles(prev => ({
+        setFiles((prev) => ({
             ...prev,
             [fieldName]: e.target.multiple ? selectedFiles : selectedFiles[0]
         }));
@@ -394,7 +518,7 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
                 uploadedUrls.push(await uploadSingleFile(file, folder));
             }
 
-            uploadedUrls.forEach(url => data.append(fieldName, url));
+            uploadedUrls.forEach((url) => data.append(fieldName, url));
         }
     };
 
@@ -405,10 +529,9 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
 
         try {
             const data = new FormData();
-            if (initialData && initialData.id) data.append('id', initialData.id);
+            if (initialData?.id) data.append('id', initialData.id);
 
-            Object.keys(formData).forEach(key => {
-                // Exclude arrays/files from direct append if they are managed separately or if they are from initialData JSON
+            Object.keys(formData).forEach((key) => {
                 if (typeof formData[key] !== 'object') {
                     data.append(key, formData[key]);
                 }
@@ -417,18 +540,16 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
             await appendUploadedFiles(data);
 
             const method = initialData ? 'PUT' : 'POST';
-            const res = await fetch(endpoint, { method, body: data });
-            const payload = await res.json().catch(() => null);
-
-            if (!res.ok) {
-                throw new Error(payload?.error || 'Blad zapisu');
-            }
+            await requestJson(endpoint, {
+                method,
+                body: data
+            });
 
             setFiles({});
             onSuccess();
-        } catch (err) {
-            console.error(err);
-            setSubmitError(err?.message || 'Blad polaczenia');
+        } catch (error) {
+            console.error(error);
+            setSubmitError(error?.message || 'Blad polaczenia');
         } finally {
             setLoading(false);
         }
@@ -441,47 +562,84 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
         return `Wybrany plik: ${selected.name}`;
     };
 
-    const inputStyle = { width: '100%', padding: '0.8rem', background: '#222', border: '1px solid #444', color: '#fff', borderRadius: '4px', marginBottom: '1rem' };
+    const inputStyle = {
+        width: '100%',
+        padding: '0.8rem',
+        background: '#fff',
+        border: '1px solid #c4d3e3',
+        color: '#0d1f39',
+        borderRadius: '6px',
+        marginBottom: '1rem'
+    };
 
     return (
-        <div style={{ background: '#111', padding: '2rem', borderRadius: '8px', border: '1px solid #333' }}>
-            <h2 style={{ marginBottom: '2rem' }}>{initialData ? 'Edycja' : 'Dodawanie'}</h2>
+        <div style={{ background: '#f8fbff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #c4d3e3' }}>
+            <h2 style={{ marginBottom: '1.4rem' }}>{initialData ? 'Edycja rekordu' : 'Nowy rekord'}</h2>
             <form onSubmit={handleSubmit}>
-                {fields.map(field => (
+                {fields.map((field) => (
                     <div key={field.name}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: '#ccc' }}>{field.label}</label>
+                        <label style={{ display: 'block', marginBottom: '0.45rem', color: '#345' }}>{field.label}</label>
 
                         {field.type === 'textarea' ? (
-                            <textarea name={field.name} value={formData[field.name] || ''} onChange={handleChange} rows="5" style={inputStyle} />
+                            <textarea
+                                name={field.name}
+                                value={formData[field.name] || ''}
+                                onChange={handleChange}
+                                rows="5"
+                                style={inputStyle}
+                            />
                         ) : field.type === 'select' ? (
-                            <select name={field.name} value={formData[field.name] || ''} onChange={handleChange} style={inputStyle}>
-                                {field.options.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+                            <select
+                                name={field.name}
+                                value={formData[field.name] || ''}
+                                onChange={handleChange}
+                                style={inputStyle}
+                            >
+                                {field.options.map(([value, label]) => (
+                                    <option key={value} value={value}>{label}</option>
+                                ))}
                             </select>
                         ) : field.type === 'file' ? (
                             <>
-                                <input type="file" accept="image/*" multiple={field.multiple} onChange={(e) => handleFileChange(e, field.name)} style={inputStyle} />
-                                <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple={field.multiple}
+                                    onChange={(e) => handleFileChange(e, field.name)}
+                                    style={inputStyle}
+                                />
+                                <p style={{ fontSize: '0.8rem', color: '#667', marginTop: '-0.5rem', marginBottom: '1rem' }}>
                                     Maksymalny rozmiar pliku: 50MB. {getSelectedFilesInfo(field.name)}
                                 </p>
                             </>
                         ) : (
-                            <input type={field.type} name={field.name} value={formData[field.name] || ''} onChange={handleChange} step={field.step} style={inputStyle} />
+                            <input
+                                type={field.type}
+                                name={field.name}
+                                value={formData[field.name] || ''}
+                                onChange={handleChange}
+                                step={field.step}
+                                style={inputStyle}
+                            />
                         )}
                     </div>
                 ))}
 
                 {submitError && (
-                    <p style={{ color: '#ff6b6b', marginBottom: '1rem' }}>
+                    <p style={{ color: '#cf2e2e', marginBottom: '1rem' }}>
                         {submitError}
                     </p>
                 )}
 
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                    <button type="submit" className="btn" disabled={loading}>{loading ? 'Zapisywanie...' : 'Zapisz'}</button>
-                    <button type="button" onClick={onCancel} className="btn" style={{ background: '#333', color: '#fff' }}>Anuluj</button>
+                <div style={{ display: 'flex', gap: '0.7rem', marginTop: '0.7rem' }}>
+                    <button type="submit" className="btn" disabled={loading}>
+                        {loading ? 'Zapisywanie...' : 'Zapisz'}
+                    </button>
+                    <button type="button" onClick={onCancel} className="btn btnOutline">
+                        Anuluj
+                    </button>
                 </div>
             </form>
         </div>
     );
 }
-
