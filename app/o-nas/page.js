@@ -1,5 +1,4 @@
-import Link from 'next/link';
-import Navbar from '@/components/Navbar';
+﻿import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import styles from '../page.module.css';
 
@@ -8,37 +7,37 @@ export default function AboutPage() {
         <main>
             <Navbar />
             <div className="container section" style={{ paddingTop: '140px' }}>
-                <h1 className={styles.sectionTitle} style={{ textAlign: 'left', marginBottom: '4rem' }}>O Nas</h1>
+                <h1 className={styles.sectionTitle} style={{ textAlign: 'left', marginBottom: '4rem' }}>O nas</h1>
 
                 <div className={styles.aboutGrid}>
                     <div className={styles.aboutContent}>
-                        <h2 style={{ color: 'var(--primary)', marginBottom: '1.5rem', fontSize: '1.8rem', fontWeight: '800' }}>Doświadczenie i Pasja w Budownictwie</h2>
+                        <h2 style={{ color: 'var(--primary)', marginBottom: '1.5rem', fontSize: '1.8rem', fontWeight: '800' }}>Doswiadczenie i pasja w budownictwie</h2>
                         <p style={{ marginBottom: '1.5rem', fontSize: '1.1rem', color: '#333' }}>
-                            Firma <strong>PAWEŁ SOŁDAŃSKI</strong> powstała z pasji do tworzenia wyjątkowych miejsc do życia i pracy.
-                            Od lat działamy na rynku budowlanym, zdobywając cenne doświadczenie i zaufanie Klientów.
+                            Firma <strong>PAWEL SOLDANSKI</strong> powstala z pasji do tworzenia wyjatkowych miejsc do zycia i pracy.
+                            Od lat dzialamy na rynku budowlanym, zdobywajac cenne doswiadczenie i zaufanie klientow.
                         </p>
                         <p style={{ marginBottom: '1.5rem', fontSize: '1.1rem', color: '#333' }}>
-                            Naszą misją jest dostarczanie nieruchomości, które nie tylko spełniają, ale i przewyższają oczekiwania
-                            pod względem jakości, estetyki i komfortu. Nasz zespół to wykwalifikowani specjaliści – od inżynierów
-                            po architektów – którzy dbają o każdy detal na każdym etapie realizacji projektu.
+                            Nasza misja jest dostarczanie nieruchomosci, ktore nie tylko spelniaja, ale i przewyzszaja oczekiwania
+                            pod wzgledem jakosci, estetyki i komfortu. Nasz zespol to wykwalifikowani specjalisci - od inzynierow
+                            po architektow - ktorzy dbaja o kazdy detal na kazdym etapie realizacji projektu.
                         </p>
                         <p style={{ fontSize: '1.1rem', color: '#333' }}>
-                            Stawiamy na transparentność, rzetelność i terminowość. Budujemy z myślą o przyszłych pokoleniach,
-                            łącząc nowoczesne technologie z tradycją solidnego rzemiosła.
+                            Stawiamy na transparentnosc, rzetelnosc i terminowosc. Budujemy z mysla o przyszlych pokoleniach,
+                            laczac nowoczesne technologie z tradycja solidnego rzemiosla.
                         </p>
                     </div>
                     <div className={styles.aboutStats}>
                         <div className={styles.statCard}>
                             <span className={styles.statNumber}>15+</span>
-                            <span className={styles.statLabel}>Lat doświadczenia</span>
+                            <span className={styles.statLabel}>Lat doswiadczenia</span>
                         </div>
                         <div className={styles.statCard}>
                             <span className={styles.statNumber}>50+</span>
-                            <span className={styles.statLabel}>Zrealizowanych projektów</span>
+                            <span className={styles.statLabel}>Zrealizowanych projektow</span>
                         </div>
                         <div className={styles.statCard}>
                             <span className={styles.statNumber}>100%</span>
-                            <span className={styles.statLabel}>Zadowolonych klientów</span>
+                            <span className={styles.statLabel}>Zadowolonych klientow</span>
                         </div>
                     </div>
                 </div>

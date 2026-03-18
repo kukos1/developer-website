@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -30,7 +30,7 @@ export default async function InvestmentsPage() {
         <main>
             <Navbar />
             <section className="section container" style={{ paddingTop: '140px' }}>
-                <h1 className={styles.sectionTitle} style={{ textAlign: 'left', marginBottom: '4rem' }}>Nasze Inwestycje</h1>
+                <h1 className={styles.sectionTitle} style={{ textAlign: 'left', marginBottom: '4rem' }}>Nasze inwestycje</h1>
 
                 <div style={{ display: 'grid', gap: '4rem' }}>
                     {investments.map((inv, index) => (
@@ -61,7 +61,7 @@ export default async function InvestmentsPage() {
                                         borderRadius: '8px',
                                         color: '#999'
                                     }}>
-                                        Brak zdjęcia
+                                        Brak zdjecia
                                     </div>
                                 )}
                             </div>
@@ -69,20 +69,20 @@ export default async function InvestmentsPage() {
                             <div style={{ direction: 'ltr' }}>
                                 <h2 style={{ fontSize: '2.2rem', marginBottom: '1rem', color: '#111', fontWeight: '800' }}>{inv.name}</h2>
                                 <p style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}>
-                                    📍 {inv.location}
+                                    Lokalizacja: {inv.location || 'w przygotowaniu'}
                                 </p>
                                 <p style={{ lineHeight: '1.8', color: '#555', marginBottom: '2rem' }}>
                                     {inv.description}
                                 </p>
                                 <Link href="/kontakt" className="btn">
-                                    Zapytaj o szczegóły
+                                    Zapytaj o szczegoly
                                 </Link>
                             </div>
                         </div>
                     ))}
 
                     {investments.length === 0 && (
-                        <p style={{ textAlign: 'center', color: '#888' }}>Brak inwestycji do wyświetlenia.</p>
+                        <p style={{ textAlign: 'center', color: '#888' }}>Brak inwestycji do wyswietlenia.</p>
                     )}
                 </div>
             </section>

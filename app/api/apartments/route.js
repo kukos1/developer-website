@@ -1,14 +1,59 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { collectImageUrls } from '@/lib/storageUploads';
 import { isAdminRequestAuthorized } from '@/lib/adminAuth';
 
 export const runtime = 'nodejs';
 
+const ALLOWED_STATUSES = new Set(['available', 'reserved', 'sold']);
+
 function getUploadErrorResponse(error, fallbackMessage) {
     const message = error?.message || fallbackMessage;
     const status = message.includes('larger than 50MB') ? 413 : 500;
     return NextResponse.json({ error: message }, { status });
+}
+
+function toTrimmedString(value) {
+    return typeof value === 'string' ? value.trim() : '';
+}
+
+function parseOptionalNumber(value, { fieldName, integer = false, min = null }) {
+    if (value == null) return { ok: true, value: null };
+
+    const raw = String(value).trim();
+    if (!raw) return { ok: true, value: null };
+
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed)) {
+        return { ok: false, error: `Invalid ${fieldName}.` };
+    }
+
+    if (integer && !Number.isInteger(parsed)) {
+        return { ok: false, error: `Invalid ${fieldName}.` };
+    }
+
+    if (min != null && parsed < min) {
+        return { ok: false, error: `Invalid ${fieldName}.` };
+    }
+
+    return { ok: true, value: parsed };
+}
+
+function parseRequiredNumber(value, options) {
+    const parsed = parseOptionalNumber(value, options);
+    if (!parsed.ok) return parsed;
+
+    if (parsed.value == null) {
+        return { ok: false, error: `${options.fieldName} is required.` };
+    }
+
+    return parsed;
+}
+
+function parseStatus(value) {
+    const normalized = toTrimmedString(value) || 'available';
+    if (!ALLOWED_STATUSES.has(normalized)) return null;
+    return normalized;
 }
 
 export async function GET() {
@@ -33,17 +78,52 @@ export async function POST(request) {
 
     try {
         const formData = await request.formData();
-        const name = formData.get('name');
-        const floor = formData.get('floor');
-        const rooms = formData.get('rooms');
-        const area = formData.get('area');
-        const price = formData.get('price');
-        const status = formData.get('status') || 'available';
-        const description = formData.get('description');
 
-        if (!name || !price || !area) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        const name = toTrimmedString(formData.get('name'));
+        if (!name) {
+            return NextResponse.json({ error: 'Name is required.' }, { status: 400 });
         }
+
+        const areaResult = parseRequiredNumber(formData.get('area'), {
+            fieldName: 'area',
+            min: 0
+        });
+        if (!areaResult.ok) {
+            return NextResponse.json({ error: areaResult.error }, { status: 400 });
+        }
+
+        const priceResult = parseRequiredNumber(formData.get('price'), {
+            fieldName: 'price',
+            min: 0
+        });
+        if (!priceResult.ok) {
+            return NextResponse.json({ error: priceResult.error }, { status: 400 });
+        }
+
+        const floorResult = parseOptionalNumber(formData.get('floor'), {
+            fieldName: 'floor',
+            integer: true,
+            min: 0
+        });
+        if (!floorResult.ok) {
+            return NextResponse.json({ error: floorResult.error }, { status: 400 });
+        }
+
+        const roomsResult = parseOptionalNumber(formData.get('rooms'), {
+            fieldName: 'rooms',
+            integer: true,
+            min: 0
+        });
+        if (!roomsResult.ok) {
+            return NextResponse.json({ error: roomsResult.error }, { status: 400 });
+        }
+
+        const status = parseStatus(formData.get('status'));
+        if (!status) {
+            return NextResponse.json({ error: 'Invalid status.' }, { status: 400 });
+        }
+
+        const description = toTrimmedString(formData.get('description')) || null;
 
         const images = await collectImageUrls({
             supabase,
@@ -55,10 +135,10 @@ export async function POST(request) {
             .from('apartments')
             .insert([{
                 name,
-                floor: Number(floor),
-                rooms: Number(rooms),
-                area: Number(area),
-                price: Number(price),
+                floor: floorResult.value,
+                rooms: roomsResult.value,
+                area: areaResult.value,
+                price: priceResult.value,
                 status,
                 description,
                 images,
@@ -83,20 +163,79 @@ export async function PUT(request) {
 
     try {
         const formData = await request.formData();
-        const id = formData.get('id');
+        const id = toTrimmedString(formData.get('id'));
 
         if (!id) {
             return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
 
         const updates = {};
-        if (formData.has('name')) updates.name = formData.get('name');
-        if (formData.has('floor')) updates.floor = Number(formData.get('floor'));
-        if (formData.has('rooms')) updates.rooms = Number(formData.get('rooms'));
-        if (formData.has('area')) updates.area = Number(formData.get('area'));
-        if (formData.has('price')) updates.price = Number(formData.get('price'));
-        if (formData.has('status')) updates.status = formData.get('status');
-        if (formData.has('description')) updates.description = formData.get('description');
+
+        if (formData.has('name')) {
+            const name = toTrimmedString(formData.get('name'));
+            if (!name) {
+                return NextResponse.json({ error: 'Name cannot be empty.' }, { status: 400 });
+            }
+            updates.name = name;
+        }
+
+        if (formData.has('floor')) {
+            const floorResult = parseOptionalNumber(formData.get('floor'), {
+                fieldName: 'floor',
+                integer: true,
+                min: 0
+            });
+            if (!floorResult.ok) {
+                return NextResponse.json({ error: floorResult.error }, { status: 400 });
+            }
+            updates.floor = floorResult.value;
+        }
+
+        if (formData.has('rooms')) {
+            const roomsResult = parseOptionalNumber(formData.get('rooms'), {
+                fieldName: 'rooms',
+                integer: true,
+                min: 0
+            });
+            if (!roomsResult.ok) {
+                return NextResponse.json({ error: roomsResult.error }, { status: 400 });
+            }
+            updates.rooms = roomsResult.value;
+        }
+
+        if (formData.has('area')) {
+            const areaResult = parseOptionalNumber(formData.get('area'), {
+                fieldName: 'area',
+                min: 0
+            });
+            if (!areaResult.ok) {
+                return NextResponse.json({ error: areaResult.error }, { status: 400 });
+            }
+            updates.area = areaResult.value;
+        }
+
+        if (formData.has('price')) {
+            const priceResult = parseOptionalNumber(formData.get('price'), {
+                fieldName: 'price',
+                min: 0
+            });
+            if (!priceResult.ok) {
+                return NextResponse.json({ error: priceResult.error }, { status: 400 });
+            }
+            updates.price = priceResult.value;
+        }
+
+        if (formData.has('status')) {
+            const status = parseStatus(formData.get('status'));
+            if (!status) {
+                return NextResponse.json({ error: 'Invalid status.' }, { status: 400 });
+            }
+            updates.status = status;
+        }
+
+        if (formData.has('description')) {
+            updates.description = toTrimmedString(formData.get('description')) || null;
+        }
 
         const imageInputs = formData.getAll('images');
         if (imageInputs.length > 0) {
@@ -110,6 +249,10 @@ export async function PUT(request) {
                 updates.images = newImages;
                 updates.image_url = newImages[0];
             }
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return NextResponse.json({ error: 'No fields to update.' }, { status: 400 });
         }
 
         const { data, error } = await supabase

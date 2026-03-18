@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -10,7 +10,6 @@ export default function ContactPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Simulate form submission
         setSubmitted(true);
         setFormData({ name: '', email: '', message: '' });
     };
@@ -27,9 +26,9 @@ export default function ContactPage() {
 
                 <div className={styles.contactGrid}>
                     <div className={styles.contactInfo}>
-                        <h2 className={styles.contactHeading}>Skontaktuj się z nami</h2>
+                        <h2 className={styles.contactHeading}>Skontaktuj sie z nami</h2>
                         <div className={styles.contactDetails}>
-                            <p className={styles.companyName}>PAWEŁ SOŁDAŃSKI</p>
+                            <p className={styles.companyName}>PAWEL SOLDANSKI</p>
                             <p className={styles.mb05}>Gorzewo 31C</p>
                             <p className={styles.mb15}>09-200 Sierpc</p>
 
@@ -55,14 +54,14 @@ export default function ContactPage() {
                         <h3>Napisz do nas</h3>
                         {submitted ? (
                             <div className={styles.successMessage}>
-                                ✨ Dziękujemy za wiadomość! Skontaktujemy się z Tobą wkrótce.
+                                Dziekujemy za wiadomosc. Skontaktujemy sie z Toba wkrotce.
                             </div>
                         ) : (
                             <form onSubmit={handleSubmit} className={styles.formGroup}>
                                 <input
                                     type="text"
                                     name="name"
-                                    placeholder="Imię i Nazwisko"
+                                    placeholder="Imie i nazwisko"
                                     required
                                     value={formData.name}
                                     onChange={handleChange}
@@ -71,7 +70,7 @@ export default function ContactPage() {
                                 <input
                                     type="email"
                                     name="email"
-                                    placeholder="Adres Email"
+                                    placeholder="Adres email"
                                     required
                                     value={formData.email}
                                     onChange={handleChange}
@@ -79,14 +78,14 @@ export default function ContactPage() {
                                 />
                                 <textarea
                                     name="message"
-                                    placeholder="Twoja wiadomość..."
+                                    placeholder="Twoja wiadomosc..."
                                     rows="5"
                                     required
                                     value={formData.message}
                                     onChange={handleChange}
                                     className={styles.formInput}
                                 ></textarea>
-                                <button type="submit" className={`btn shimmer ${styles.fullWidth}`}>Wyślij Wiadomość</button>
+                                <button type="submit" className={`btn shimmer ${styles.fullWidth}`}>Wyslij wiadomosc</button>
                             </form>
                         )}
                     </div>
