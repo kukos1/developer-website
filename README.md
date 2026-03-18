@@ -14,6 +14,7 @@ Utworz plik `.env.local`:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
 
 # Wymagane do bezpiecznego logowania panelu admina
 ADMIN_PASSWORD=change-me
@@ -21,6 +22,7 @@ ADMIN_SESSION_SECRET=change-this-to-a-long-random-string
 ```
 
 W produkcji `ADMIN_PASSWORD` i `ADMIN_SESSION_SECRET` musza byc ustawione.
+W produkcji ustaw tez `SUPABASE_SERVICE_ROLE_KEY`, aby endpointy API dzialaly z uprawnieniami serwerowymi.
 
 ## Uruchomienie
 

@@ -1,5 +1,5 @@
 ﻿import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase';
 import { collectImageUrls } from '@/lib/storageUploads';
 import { isAdminRequestAuthorized } from '@/lib/adminAuth';
 
@@ -58,7 +58,7 @@ function parseStatus(value) {
 
 export async function GET() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('apartments')
             .select('*')
             .order('created_at', { ascending: false });
@@ -126,12 +126,12 @@ export async function POST(request) {
         const description = toTrimmedString(formData.get('description')) || null;
 
         const images = await collectImageUrls({
-            supabase,
+            supabase: supabaseServer,
             inputs: formData.getAll('images'),
             folder: 'apartments'
         });
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('apartments')
             .insert([{
                 name,
@@ -240,7 +240,7 @@ export async function PUT(request) {
         const imageInputs = formData.getAll('images');
         if (imageInputs.length > 0) {
             const newImages = await collectImageUrls({
-                supabase,
+                supabase: supabaseServer,
                 inputs: imageInputs,
                 folder: 'apartments'
             });
@@ -255,7 +255,7 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'No fields to update.' }, { status: 400 });
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('apartments')
             .update(updates)
             .eq('id', id)
@@ -284,7 +284,7 @@ export async function DELETE(request) {
             return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
 
-        const { error } = await supabase
+        const { error } = await supabaseServer
             .from('apartments')
             .delete()
             .eq('id', id);

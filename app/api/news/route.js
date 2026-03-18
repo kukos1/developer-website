@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase';
 import { collectSingleImageUrl } from '@/lib/storageUploads';
 import { isAdminRequestAuthorized } from '@/lib/adminAuth';
 
@@ -13,7 +13,7 @@ function getUploadErrorResponse(error, fallbackMessage) {
 
 export async function GET() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('news')
             .select('*')
             .order('date', { ascending: false });
@@ -42,13 +42,13 @@ export async function POST(request) {
         }
 
         const imageUrl = await collectSingleImageUrl({
-            supabase,
+            supabase: supabaseServer,
             input: formData.get('image'),
             folder: 'news',
             prefix: 'news-'
         });
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('news')
             .insert([{
                 title,
@@ -87,14 +87,14 @@ export async function PUT(request) {
         if (formData.has('content')) updates.content = formData.get('content');
 
         const imageUrl = await collectSingleImageUrl({
-            supabase,
+            supabase: supabaseServer,
             input: formData.get('image'),
             folder: 'news',
             prefix: 'news-'
         });
         if (imageUrl) updates.image = imageUrl;
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('news')
             .update(updates)
             .eq('id', id)
@@ -123,7 +123,7 @@ export async function DELETE(request) {
             return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
 
-        const { error } = await supabase
+        const { error } = await supabaseServer
             .from('news')
             .delete()
             .eq('id', id);

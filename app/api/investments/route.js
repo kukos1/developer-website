@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase';
 import { collectImageUrls } from '@/lib/storageUploads';
 import { isAdminRequestAuthorized } from '@/lib/adminAuth';
 
@@ -13,7 +13,7 @@ function getUploadErrorResponse(error, fallbackMessage) {
 
 export async function GET() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('investments')
             .select('*')
             .order('created_at', { ascending: false });
@@ -42,13 +42,13 @@ export async function POST(request) {
         }
 
         const images = await collectImageUrls({
-            supabase,
+            supabase: supabaseServer,
             inputs: formData.getAll('images'),
             folder: 'investments',
             prefix: 'inv-'
         });
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('investments')
             .insert([{
                 name,
@@ -89,7 +89,7 @@ export async function PUT(request) {
         const imageInputs = formData.getAll('images');
         if (imageInputs.length > 0) {
             const newImages = await collectImageUrls({
-                supabase,
+                supabase: supabaseServer,
                 inputs: imageInputs,
                 folder: 'investments',
                 prefix: 'inv-'
@@ -98,7 +98,7 @@ export async function PUT(request) {
             if (newImages.length > 0) updates.images = newImages;
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('investments')
             .update(updates)
             .eq('id', id)
@@ -127,7 +127,7 @@ export async function DELETE(request) {
             return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
 
-        const { error } = await supabase
+        const { error } = await supabaseServer
             .from('investments')
             .delete()
             .eq('id', id);

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseServer } from '@/lib/supabase';
 import { isAdminRequestAuthorized } from '@/lib/adminAuth';
 
 export const runtime = 'nodejs';
@@ -63,7 +63,7 @@ async function saveLeadToStorage(payload) {
     const storagePath = `${LEADS_FOLDER}/${fileName}`;
     const serialized = JSON.stringify(payload, null, 2);
 
-    const { error } = await supabase.storage
+    const { error } = await supabaseServer.storage
         .from(LEADS_BUCKET)
         .upload(storagePath, Buffer.from(serialized, 'utf8'), {
             contentType: 'application/json; charset=utf-8',
@@ -75,7 +75,7 @@ async function saveLeadToStorage(payload) {
 }
 
 async function loadLeadFromStoragePath(storagePath) {
-    const { data, error } = await supabase.storage
+    const { data, error } = await supabaseServer.storage
         .from(LEADS_BUCKET)
         .download(storagePath);
 
@@ -85,7 +85,7 @@ async function loadLeadFromStoragePath(storagePath) {
 }
 
 async function listLeadsFromStorage({ status, limit }) {
-    const { data: entries, error } = await supabase.storage
+    const { data: entries, error } = await supabaseServer.storage
         .from(LEADS_BUCKET)
         .list(LEADS_FOLDER, {
             limit,
@@ -127,7 +127,7 @@ async function upsertStorageLead(id, updates) {
     };
 
     const serialized = JSON.stringify(merged, null, 2);
-    const { error } = await supabase.storage
+    const { error } = await supabaseServer.storage
         .from(LEADS_BUCKET)
         .upload(storagePath, Buffer.from(serialized, 'utf8'), {
             contentType: 'application/json; charset=utf-8',
@@ -142,7 +142,7 @@ async function deleteStorageLead(id) {
     const storagePath = getStoragePathFromId(id);
     if (!storagePath) return false;
 
-    const { error } = await supabase.storage
+    const { error } = await supabaseServer.storage
         .from(LEADS_BUCKET)
         .remove([storagePath]);
 
@@ -165,7 +165,7 @@ export async function GET(request) {
             return NextResponse.json({ error: 'Invalid status filter.' }, { status: 400 });
         }
 
-        let query = supabase
+        let query = supabaseServer
             .from('leads')
             .select('*')
             .order('created_at', { ascending: false })
@@ -219,7 +219,7 @@ export async function POST(request) {
             responded_at: null
         };
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('leads')
             .insert([leadPayload])
             .select()
@@ -280,7 +280,7 @@ export async function PUT(request) {
             return NextResponse.json(updatedLead);
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseServer
             .from('leads')
             .update(updates)
             .eq('id', id)
@@ -319,7 +319,7 @@ export async function DELETE(request) {
             return NextResponse.json({ message: 'Lead deleted' });
         }
 
-        const { error } = await supabase
+        const { error } = await supabaseServer
             .from('leads')
             .delete()
             .eq('id', id);
