@@ -14,7 +14,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: 'PAWEL SOLDANSKI - Nowoczesne Inwestycje Budowlane',
+  title: 'PAWEŁ SOŁDAŃSKI - Nowoczesne Inwestycje Budowlane',
   description: 'Budujemy przyszlosc, tworzymy przestrzen.',
   icons: {
     icon: [

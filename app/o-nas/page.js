@@ -13,7 +13,7 @@ export default function AboutPage() {
                     <div className={styles.aboutContent}>
                         <h2 style={{ color: 'var(--primary)', marginBottom: '1.5rem', fontSize: '1.8rem', fontWeight: '800' }}>Doswiadczenie i pasja w budownictwie</h2>
                         <p style={{ marginBottom: '1.5rem', fontSize: '1.1rem', color: '#333' }}>
-                            Firma <strong>PAWEL SOLDANSKI</strong> powstala z pasji do tworzenia wyjatkowych miejsc do zycia i pracy.
+                            Firma <strong>PAWEŁ SOŁDAŃSKI</strong> powstala z pasji do tworzenia wyjatkowych miejsc do zycia i pracy.
                             Od lat dzialamy na rynku budowlanym, zdobywajac cenne doswiadczenie i zaufanie klientow.
                         </p>
                         <p style={{ marginBottom: '1.5rem', fontSize: '1.1rem', color: '#333' }}>

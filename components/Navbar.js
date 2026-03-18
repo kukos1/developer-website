@@ -42,7 +42,7 @@ export default function Navbar() {
                 <Link href="/" className={styles.logoContainer}>
                     <Image src="/logo.jpg" alt="Logo firmy" width={52} height={52} className={styles.logoImg} />
                     <div className={styles.logoText}>
-                        <span className={styles.companyName}>PAWEL SOLDANSKI</span>
+                        <span className={styles.companyName}>PAWEŁ SOŁDAŃSKI</span>
                         <span className={styles.tagline}>Uslugi Remontowo Budowlane</span>
                     </div>
                 </Link>

@@ -28,7 +28,7 @@ export default function ContactPage() {
                     <div className={styles.contactInfo}>
                         <h2 className={styles.contactHeading}>Skontaktuj sie z nami</h2>
                         <div className={styles.contactDetails}>
-                            <p className={styles.companyName}>PAWEL SOLDANSKI</p>
+                            <p className={styles.companyName}>PAWEŁ SOŁDAŃSKI</p>
                             <p className={styles.mb05}>Gorzewo 31C</p>
                             <p className={styles.mb15}>09-200 Sierpc</p>
 

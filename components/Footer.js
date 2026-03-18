@@ -7,7 +7,7 @@ export default function Footer() {
             <div className="container">
                 <div className={styles.footerGrid}>
                     <div>
-                        <h3 className={styles.footerLogo}>PAWEL SOLDANSKI</h3>
+                        <h3 className={styles.footerLogo}>PAWEŁ SOŁDAŃSKI</h3>
                         <p className={styles.footerTagline}>Uslugi Remontowo Budowlane</p>
                     </div>
 
@@ -44,7 +44,7 @@ export default function Footer() {
 
                 <div className={styles.footerBottom}>
                     <p>
-                        &copy; {new Date().getFullYear()} PAWEL SOLDANSKI - Uslugi Remontowo Budowlane.
+                        &copy; {new Date().getFullYear()} PAWEŁ SOŁDAŃSKI - Uslugi Remontowo Budowlane.
                         Wszelkie prawa zastrzezone.
                     </p>
                 </div>
