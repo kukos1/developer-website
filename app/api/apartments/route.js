@@ -56,6 +56,10 @@ function parseStatus(value) {
     return normalized;
 }
 
+function mergeImageUrls(existingImages, newImages) {
+    return [...new Set([...existingImages, ...newImages].filter(Boolean))];
+}
+
 export async function GET() {
     try {
         const { data, error } = await supabaseServer
@@ -239,6 +243,18 @@ export async function PUT(request) {
 
         const imageInputs = formData.getAll('images');
         if (imageInputs.length > 0) {
+            const { data: existingApartment, error: existingError } = await supabaseServer
+                .from('apartments')
+                .select('images, image_url')
+                .eq('id', id)
+                .single();
+
+            if (existingError) throw existingError;
+
+            const existingImages = Array.isArray(existingApartment?.images)
+                ? existingApartment.images.filter((item) => typeof item === 'string' && item.trim().length > 0)
+                : [];
+
             const newImages = await collectImageUrls({
                 supabase: supabaseServer,
                 inputs: imageInputs,
@@ -246,8 +262,9 @@ export async function PUT(request) {
             });
 
             if (newImages.length > 0) {
-                updates.images = newImages;
-                updates.image_url = newImages[0];
+                const mergedImages = mergeImageUrls(existingImages, newImages);
+                updates.images = mergedImages;
+                updates.image_url = existingApartment?.image_url || mergedImages[0] || null;
             }
         }
 

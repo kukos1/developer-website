@@ -11,6 +11,10 @@ function getUploadErrorResponse(error, fallbackMessage) {
     return NextResponse.json({ error: message }, { status });
 }
 
+function mergeImageUrls(existingImages, newImages) {
+    return [...new Set([...existingImages, ...newImages].filter(Boolean))];
+}
+
 export async function GET() {
     try {
         const { data, error } = await supabaseServer
@@ -88,6 +92,18 @@ export async function PUT(request) {
 
         const imageInputs = formData.getAll('images');
         if (imageInputs.length > 0) {
+            const { data: existingInvestment, error: existingError } = await supabaseServer
+                .from('investments')
+                .select('images')
+                .eq('id', id)
+                .single();
+
+            if (existingError) throw existingError;
+
+            const existingImages = Array.isArray(existingInvestment?.images)
+                ? existingInvestment.images.filter((item) => typeof item === 'string' && item.trim().length > 0)
+                : [];
+
             const newImages = await collectImageUrls({
                 supabase: supabaseServer,
                 inputs: imageInputs,
@@ -95,7 +111,9 @@ export async function PUT(request) {
                 prefix: 'inv-'
             });
 
-            if (newImages.length > 0) updates.images = newImages;
+            if (newImages.length > 0) {
+                updates.images = mergeImageUrls(existingImages, newImages);
+            }
         }
 
         const { data, error } = await supabaseServer
