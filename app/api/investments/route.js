@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { collectImageUrls } from '@/lib/storageUploads';
+
+export const runtime = 'nodejs';
+
+function getUploadErrorResponse(error, fallbackMessage) {
+    const message = error?.message || fallbackMessage;
+    const status = message.includes('larger than 50MB') ? 413 : 500;
+    return NextResponse.json({ error: message }, { status });
+}
 
 export async function GET() {
     try {
@@ -22,35 +31,17 @@ export async function POST(request) {
         const name = formData.get('name');
         const location = formData.get('location');
         const description = formData.get('description');
-        const imageFiles = formData.getAll('images');
 
         if (!name) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const images = [];
-        for (const file of imageFiles) {
-            if (file && file.name) {
-                const bytes = await file.arrayBuffer();
-                const buffer = Buffer.from(bytes);
-                const fileName = `inv-${Date.now()}-${file.name.replace(/\s/g, '-')}`;
-
-                const { error: uploadError } = await supabase.storage
-                    .from('uploads')
-                    .upload(`investments/${fileName}`, buffer, {
-                        contentType: file.type,
-                        upsert: true
-                    });
-
-                if (uploadError) throw uploadError;
-
-                const { data: { publicUrl } } = supabase.storage
-                    .from('uploads')
-                    .getPublicUrl(`investments/${fileName}`);
-
-                images.push(publicUrl);
-            }
-        }
+        const images = await collectImageUrls({
+            supabase,
+            inputs: formData.getAll('images'),
+            folder: 'investments',
+            prefix: 'inv-'
+        });
 
         const { data, error } = await supabase
             .from('investments')
@@ -68,7 +59,7 @@ export async function POST(request) {
         return NextResponse.json(data, { status: 201 });
     } catch (error) {
         console.error('Error in POST investments:', error);
-        return NextResponse.json({ error: 'Failed to save investment' }, { status: 500 });
+        return getUploadErrorResponse(error, 'Failed to save investment');
     }
 }
 
@@ -86,31 +77,15 @@ export async function PUT(request) {
         if (formData.has('location')) updates.location = formData.get('location');
         if (formData.has('description')) updates.description = formData.get('description');
 
-        const imageFiles = formData.getAll('images');
-        if (imageFiles.length > 0) {
-            const newImages = [];
-            for (const file of imageFiles) {
-                if (file && file.name) {
-                    const bytes = await file.arrayBuffer();
-                    const buffer = Buffer.from(bytes);
-                    const fileName = `inv-${Date.now()}-${file.name.replace(/\s/g, '-')}`;
+        const imageInputs = formData.getAll('images');
+        if (imageInputs.length > 0) {
+            const newImages = await collectImageUrls({
+                supabase,
+                inputs: imageInputs,
+                folder: 'investments',
+                prefix: 'inv-'
+            });
 
-                    const { error: uploadError } = await supabase.storage
-                        .from('uploads')
-                        .upload(`investments/${fileName}`, buffer, {
-                            contentType: file.type,
-                            upsert: true
-                        });
-
-                    if (uploadError) throw uploadError;
-
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('uploads')
-                        .getPublicUrl(`investments/${fileName}`);
-
-                    newImages.push(publicUrl);
-                }
-            }
             if (newImages.length > 0) updates.images = newImages;
         }
 
@@ -126,7 +101,7 @@ export async function PUT(request) {
         return NextResponse.json(data);
     } catch (error) {
         console.error('Error in PUT investments:', error);
-        return NextResponse.json({ error: 'Failed to update investment' }, { status: 500 });
+        return getUploadErrorResponse(error, 'Failed to update investment');
     }
 }
 

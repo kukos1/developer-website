@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { collectImageUrls } from '@/lib/storageUploads';
+
+export const runtime = 'nodejs';
+
+function getUploadErrorResponse(error, fallbackMessage) {
+    const message = error?.message || fallbackMessage;
+    const status = message.includes('larger than 50MB') ? 413 : 500;
+    return NextResponse.json({ error: message }, { status });
+}
 
 export async function GET() {
     try {
@@ -26,35 +35,16 @@ export async function POST(request) {
         const price = formData.get('price');
         const status = formData.get('status') || 'available';
         const description = formData.get('description');
-        const imageFiles = formData.getAll('images');
 
         if (!name || !price || !area) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const images = [];
-        for (const file of imageFiles) {
-            if (file && file.name) {
-                const bytes = await file.arrayBuffer();
-                const buffer = Buffer.from(bytes);
-                const fileName = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
-
-                const { data, error: uploadError } = await supabase.storage
-                    .from('uploads')
-                    .upload(`apartments/${fileName}`, buffer, {
-                        contentType: file.type,
-                        upsert: true
-                    });
-
-                if (uploadError) throw uploadError;
-
-                const { data: { publicUrl } } = supabase.storage
-                    .from('uploads')
-                    .getPublicUrl(`apartments/${fileName}`);
-
-                images.push(publicUrl);
-            }
-        }
+        const images = await collectImageUrls({
+            supabase,
+            inputs: formData.getAll('images'),
+            folder: 'apartments'
+        });
 
         const { data, error } = await supabase
             .from('apartments')
@@ -67,7 +57,7 @@ export async function POST(request) {
                 status,
                 description,
                 images,
-                image_url: images.length > 0 ? images[0] : null
+                image_url: images[0] || null
             }])
             .select()
             .single();
@@ -77,7 +67,7 @@ export async function POST(request) {
         return NextResponse.json(data, { status: 201 });
     } catch (error) {
         console.error('Error in POST apartments:', error);
-        return NextResponse.json({ error: 'Failed to save apartment' }, { status: 500 });
+        return getUploadErrorResponse(error, 'Failed to save apartment');
     }
 }
 
@@ -99,34 +89,14 @@ export async function PUT(request) {
         if (formData.has('status')) updates.status = formData.get('status');
         if (formData.has('description')) updates.description = formData.get('description');
 
-        const imageFiles = formData.getAll('images');
-        if (imageFiles.length > 0) {
-            const newImages = [];
-            for (const file of imageFiles) {
-                if (file && file.name) {
-                    const bytes = await file.arrayBuffer();
-                    const buffer = Buffer.from(bytes);
-                    const fileName = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
+        const imageInputs = formData.getAll('images');
+        if (imageInputs.length > 0) {
+            const newImages = await collectImageUrls({
+                supabase,
+                inputs: imageInputs,
+                folder: 'apartments'
+            });
 
-                    const { error: uploadError } = await supabase.storage
-                        .from('uploads')
-                        .upload(`apartments/${fileName}`, buffer, {
-                            contentType: file.type,
-                            upsert: true
-                        });
-
-                    if (uploadError) throw uploadError;
-
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('uploads')
-                        .getPublicUrl(`apartments/${fileName}`);
-
-                    newImages.push(publicUrl);
-                }
-            }
-
-            // To be robust, we'd fetch existing images and append, but for now we follow old logic
-            // providing limited image management
             if (newImages.length > 0) {
                 updates.images = newImages;
                 updates.image_url = newImages[0];
@@ -145,7 +115,7 @@ export async function PUT(request) {
         return NextResponse.json(data);
     } catch (error) {
         console.error('Error in PUT apartments:', error);
-        return NextResponse.json({ error: 'Failed to update apartment' }, { status: 500 });
+        return getUploadErrorResponse(error, 'Failed to update apartment');
     }
 }
 

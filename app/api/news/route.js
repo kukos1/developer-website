@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { collectSingleImageUrl } from '@/lib/storageUploads';
+
+export const runtime = 'nodejs';
+
+function getUploadErrorResponse(error, fallbackMessage) {
+    const message = error?.message || fallbackMessage;
+    const status = message.includes('larger than 50MB') ? 413 : 500;
+    return NextResponse.json({ error: message }, { status });
+}
 
 export async function GET() {
     try {
@@ -22,33 +31,17 @@ export async function POST(request) {
         const title = formData.get('title');
         const date = formData.get('date') || new Date().toISOString().split('T')[0];
         const content = formData.get('content');
-        const imageFile = formData.get('image');
 
         if (!title || !content) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        let imageUrl = null;
-        if (imageFile && imageFile.name) {
-            const bytes = await imageFile.arrayBuffer();
-            const buffer = Buffer.from(bytes);
-            const fileName = `news-${Date.now()}-${imageFile.name.replace(/\s/g, '-')}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('uploads')
-                .upload(`news/${fileName}`, buffer, {
-                    contentType: imageFile.type,
-                    upsert: true
-                });
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('uploads')
-                .getPublicUrl(`news/${fileName}`);
-
-            imageUrl = publicUrl;
-        }
+        const imageUrl = await collectSingleImageUrl({
+            supabase,
+            input: formData.get('image'),
+            folder: 'news',
+            prefix: 'news-'
+        });
 
         const { data, error } = await supabase
             .from('news')
@@ -66,7 +59,7 @@ export async function POST(request) {
         return NextResponse.json(data, { status: 201 });
     } catch (error) {
         console.error('Error in POST news:', error);
-        return NextResponse.json({ error: 'Failed to save news' }, { status: 500 });
+        return getUploadErrorResponse(error, 'Failed to save news');
     }
 }
 
@@ -84,27 +77,13 @@ export async function PUT(request) {
         if (formData.has('date')) updates.date = formData.get('date');
         if (formData.has('content')) updates.content = formData.get('content');
 
-        const imageFile = formData.get('image');
-        if (imageFile && imageFile.name) {
-            const bytes = await imageFile.arrayBuffer();
-            const buffer = Buffer.from(bytes);
-            const fileName = `news-${Date.now()}-${imageFile.name.replace(/\s/g, '-')}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('uploads')
-                .upload(`news/${fileName}`, buffer, {
-                    contentType: imageFile.type,
-                    upsert: true
-                });
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('uploads')
-                .getPublicUrl(`news/${fileName}`);
-
-            updates.image = publicUrl;
-        }
+        const imageUrl = await collectSingleImageUrl({
+            supabase,
+            input: formData.get('image'),
+            folder: 'news',
+            prefix: 'news-'
+        });
+        if (imageUrl) updates.image = imageUrl;
 
         const { data, error } = await supabase
             .from('news')
@@ -118,7 +97,7 @@ export async function PUT(request) {
         return NextResponse.json(data);
     } catch (error) {
         console.error('Error in PUT news:', error);
-        return NextResponse.json({ error: 'Failed to update news' }, { status: 500 });
+        return getUploadErrorResponse(error, 'Failed to update news');
     }
 }
 

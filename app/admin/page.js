@@ -2,6 +2,23 @@
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { supabase } from '@/lib/supabase';
+
+const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
+
+const STORAGE_FOLDER_BY_ENDPOINT = {
+    '/api/apartments': 'apartments',
+    '/api/investments': 'investments',
+    '/api/news': 'news'
+};
+
+function sanitizeFileName(fileName) {
+    return fileName
+        .normalize('NFKD')
+        .replace(/[^\w.\-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+}
 
 // --- MAIN PAGE ---
 export default function AdminPage() {
@@ -55,6 +72,8 @@ function AdminContent() {
     const [activeTab, setActiveTab] = useState('apartments');
 
     const tabStyle = (tabName) => ({
+        appearance: 'none',
+        backgroundColor: 'transparent',
         padding: '1rem 2rem',
         cursor: 'pointer',
         background: activeTab === tabName ? 'var(--primary)' : 'transparent',
@@ -70,9 +89,9 @@ function AdminContent() {
         <div>
             <h1 style={{ marginBottom: '2rem' }}>Zarządzanie Treścią</h1>
             <div style={{ display: 'flex', borderBottom: '1px solid #333', marginBottom: '2rem' }}>
-                <div onClick={() => setActiveTab('apartments')} style={tabStyle('apartments')}>Mieszkania</div>
-                <div onClick={() => setActiveTab('investments')} style={tabStyle('investments')}>Inwestycje</div>
-                <div onClick={() => setActiveTab('blog')} style={tabStyle('blog')}>Blog / News</div>
+                <button type="button" onClick={() => setActiveTab('apartments')} style={tabStyle('apartments')}>Mieszkania</button>
+                <button type="button" onClick={() => setActiveTab('investments')} style={tabStyle('investments')}>Inwestycje</button>
+                <button type="button" onClick={() => setActiveTab('blog')} style={tabStyle('blog')}>Blog / News</button>
             </div>
 
             {activeTab === 'apartments' && <ApartmentsManager />}
@@ -304,6 +323,7 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
     const [formData, setFormData] = useState({});
     const [files, setFiles] = useState({});
     const [loading, setLoading] = useState(false);
+    const [submitError, setSubmitError] = useState('');
 
     useEffect(() => {
         if (initialData) {
@@ -314,6 +334,8 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
             fields.forEach(f => empty[f.name] = '');
             setFormData(empty);
         }
+        setFiles({});
+        setSubmitError('');
     }, [initialData, fields]);
 
     const handleChange = (e) => {
@@ -322,14 +344,64 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
     };
 
     const handleFileChange = (e, fieldName) => {
-        if (e.target.files) {
-            setFiles(prev => ({ ...prev, [fieldName]: e.target.multiple ? Array.from(e.target.files) : e.target.files[0] }));
+        if (!e.target.files) return;
+
+        const selectedFiles = Array.from(e.target.files);
+        const tooLargeFile = selectedFiles.find(file => file.size > MAX_FILE_SIZE_BYTES);
+        if (tooLargeFile) {
+            alert(`Plik "${tooLargeFile.name}" przekracza limit 50MB.`);
+            e.target.value = '';
+            return;
+        }
+
+        setFiles(prev => ({
+            ...prev,
+            [fieldName]: e.target.multiple ? selectedFiles : selectedFiles[0]
+        }));
+    };
+
+    const uploadSingleFile = async (file, folder) => {
+        const safeName = sanitizeFileName(file.name);
+        const uniquePath = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('uploads')
+            .upload(uniquePath, file, {
+                contentType: file.type || 'application/octet-stream',
+                upsert: false
+            });
+
+        if (uploadError) {
+            throw new Error(uploadError.message || `Upload failed for ${file.name}`);
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('uploads')
+            .getPublicUrl(uniquePath);
+
+        return publicUrl;
+    };
+
+    const appendUploadedFiles = async (data) => {
+        const folder = STORAGE_FOLDER_BY_ENDPOINT[endpoint] || 'uploads';
+
+        for (const [fieldName, fileOrFiles] of Object.entries(files)) {
+            const selectedFiles = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
+            const uploadedUrls = [];
+
+            for (const file of selectedFiles) {
+                if (!file) continue;
+                uploadedUrls.push(await uploadSingleFile(file, folder));
+            }
+
+            uploadedUrls.forEach(url => data.append(fieldName, url));
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setSubmitError('');
 
         try {
             const data = new FormData();
@@ -342,30 +414,31 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
                 }
             });
 
-            // Append files
-            Object.keys(files).forEach(fieldName => {
-                const fileOrFiles = files[fieldName];
-                if (Array.isArray(fileOrFiles)) {
-                    fileOrFiles.forEach(f => data.append(fieldName, f));
-                } else if (fileOrFiles) {
-                    data.append(fieldName, fileOrFiles);
-                }
-            });
+            await appendUploadedFiles(data);
 
             const method = initialData ? 'PUT' : 'POST';
             const res = await fetch(endpoint, { method, body: data });
+            const payload = await res.json().catch(() => null);
 
-            if (res.ok) {
-                onSuccess();
-            } else {
-                alert('Błąd zapisu');
+            if (!res.ok) {
+                throw new Error(payload?.error || 'Blad zapisu');
             }
+
+            setFiles({});
+            onSuccess();
         } catch (err) {
             console.error(err);
-            alert('Błąd połączenia');
+            setSubmitError(err?.message || 'Blad polaczenia');
         } finally {
             setLoading(false);
         }
+    };
+
+    const getSelectedFilesInfo = (fieldName) => {
+        const selected = files[fieldName];
+        if (!selected) return '';
+        if (Array.isArray(selected)) return `Wybrano plikow: ${selected.length}`;
+        return `Wybrany plik: ${selected.name}`;
     };
 
     const inputStyle = { width: '100%', padding: '0.8rem', background: '#222', border: '1px solid #444', color: '#fff', borderRadius: '4px', marginBottom: '1rem' };
@@ -385,12 +458,23 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
                                 {field.options.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
                             </select>
                         ) : field.type === 'file' ? (
-                            <input type="file" multiple={field.multiple} onChange={(e) => handleFileChange(e, field.name)} style={inputStyle} />
+                            <>
+                                <input type="file" accept="image/*" multiple={field.multiple} onChange={(e) => handleFileChange(e, field.name)} style={inputStyle} />
+                                <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+                                    Maksymalny rozmiar pliku: 50MB. {getSelectedFilesInfo(field.name)}
+                                </p>
+                            </>
                         ) : (
                             <input type={field.type} name={field.name} value={formData[field.name] || ''} onChange={handleChange} step={field.step} style={inputStyle} />
                         )}
                     </div>
                 ))}
+
+                {submitError && (
+                    <p style={{ color: '#ff6b6b', marginBottom: '1rem' }}>
+                        {submitError}
+                    </p>
+                )}
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                     <button type="submit" className="btn" disabled={loading}>{loading ? 'Zapisywanie...' : 'Zapisz'}</button>
@@ -400,3 +484,4 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
         </div>
     );
 }
+
