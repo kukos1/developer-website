@@ -88,12 +88,25 @@ function ApartmentsManager() {
     const [view, setView] = useState('list'); // 'list' | 'form'
     const [editingItem, setEditingItem] = useState(null);
 
-    useEffect(() => { fetchItems(); }, []);
-
-    const fetchItems = async () => {
+    async function fetchItems() {
         const res = await fetch('/api/apartments');
         if (res.ok) setItems(await res.json());
-    };
+    }
+
+    useEffect(() => {
+        let isActive = true;
+
+        const loadItems = async () => {
+            const res = await fetch('/api/apartments');
+            if (!res.ok || !isActive) return;
+            const data = await res.json();
+            if (isActive) setItems(data);
+        };
+
+        void loadItems();
+
+        return () => { isActive = false; };
+    }, []);
 
     const handleDelete = async (id) => {
         if (!confirm('Usunąć?')) return;
@@ -150,12 +163,25 @@ function InvestmentsManager() {
     const [view, setView] = useState('list');
     const [editingItem, setEditingItem] = useState(null);
 
-    useEffect(() => { fetchItems(); }, []);
-
-    const fetchItems = async () => {
+    async function fetchItems() {
         const res = await fetch('/api/investments');
         if (res.ok) setItems(await res.json());
-    };
+    }
+
+    useEffect(() => {
+        let isActive = true;
+
+        const loadItems = async () => {
+            const res = await fetch('/api/investments');
+            if (!res.ok || !isActive) return;
+            const data = await res.json();
+            if (isActive) setItems(data);
+        };
+
+        void loadItems();
+
+        return () => { isActive = false; };
+    }, []);
 
     const handleDelete = async (id) => {
         if (!confirm('Usunąć?')) return;
@@ -208,12 +234,25 @@ function BlogManager() {
     const [view, setView] = useState('list');
     const [editingItem, setEditingItem] = useState(null);
 
-    useEffect(() => { fetchItems(); }, []);
-
-    const fetchItems = async () => {
+    async function fetchItems() {
         const res = await fetch('/api/news');
         if (res.ok) setItems(await res.json());
-    };
+    }
+
+    useEffect(() => {
+        let isActive = true;
+
+        const loadItems = async () => {
+            const res = await fetch('/api/news');
+            if (!res.ok || !isActive) return;
+            const data = await res.json();
+            if (isActive) setItems(data);
+        };
+
+        void loadItems();
+
+        return () => { isActive = false; };
+    }, []);
 
     const handleDelete = async (id) => {
         if (!confirm('Usunąć?')) return;
