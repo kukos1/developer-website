@@ -9,6 +9,7 @@ const ALLOWED_STATUSES = new Set(['new', 'in_progress', 'closed', 'spam']);
 const DEFAULT_SOURCE = 'contact_form';
 const LEADS_BUCKET = 'uploads';
 const LEADS_FOLDER = 'leads';
+const ENABLE_STORAGE_FALLBACK = process.env.LEADS_STORAGE_FALLBACK === 'true';
 
 function toTrimmedString(value) {
     return typeof value === 'string' ? value.trim() : '';
@@ -175,10 +176,15 @@ export async function GET(request) {
 
         const { data, error } = await query;
         if (error) {
-            if (isMissingLeadsTableError(error)) {
+            if (isMissingLeadsTableError(error) && ENABLE_STORAGE_FALLBACK) {
                 const storageLeads = await listLeadsFromStorage({ status, limit });
                 return NextResponse.json(storageLeads);
             }
+
+            if (isMissingLeadsTableError(error)) {
+                return NextResponse.json({ error: 'Leads table is missing. Run Supabase migration.' }, { status: 500 });
+            }
+
             throw error;
         }
 
@@ -226,10 +232,15 @@ export async function POST(request) {
             .single();
 
         if (error) {
-            if (isMissingLeadsTableError(error)) {
+            if (isMissingLeadsTableError(error) && ENABLE_STORAGE_FALLBACK) {
                 const storagePath = await saveLeadToStorage(leadPayload);
                 return NextResponse.json({ success: true, id: `storage:${storagePath}`, fallback: 'storage' }, { status: 201 });
             }
+
+            if (isMissingLeadsTableError(error)) {
+                return NextResponse.json({ error: 'Leads table is missing. Run Supabase migration.' }, { status: 500 });
+            }
+
             throw error;
         }
 

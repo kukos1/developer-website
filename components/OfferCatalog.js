@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -100,7 +100,7 @@ export default function OfferCatalog({ apartments }) {
                         <span>Status</span>
                         <select value={status} onChange={(e) => setStatus(e.target.value)}>
                             <option value="all">Wszystkie</option>
-                            <option value="available">Dostepne</option>
+                            <option value="available">Dostępne</option>
                             <option value="reserved">Zarezerwowane</option>
                             <option value="sold">Sprzedane</option>
                         </select>
@@ -133,17 +133,17 @@ export default function OfferCatalog({ apartments }) {
                         <span>Sortowanie</span>
                         <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                             <option value="newest">Najnowsze</option>
-                            <option value="priceAsc">Cena rosnaco</option>
-                            <option value="priceDesc">Cena malejaco</option>
-                            <option value="areaDesc">Najwiekszy metraz</option>
-                            <option value="roomsDesc">Najwiecej pokoi</option>
+                            <option value="priceAsc">Cena rosnąco</option>
+                            <option value="priceDesc">Cena malejąco</option>
+                            <option value="areaDesc">Największy metraż</option>
+                            <option value="roomsDesc">Najwięcej pokoi</option>
                             <option value="nameAsc">Nazwa A-Z</option>
                         </select>
                     </label>
                 </div>
 
                 <p className={styles.resultInfo}>
-                    Pokazano {filteredApartments.length} z {preparedApartments.length} mieszkan.
+                    Pokazano {filteredApartments.length} z {preparedApartments.length} mieszkań.
                 </p>
             </div>
 
@@ -160,8 +160,8 @@ export default function OfferCatalog({ apartments }) {
                 </div>
             ) : (
                 <div className={styles.emptyState}>
-                    <h3>Brak wynikow</h3>
-                    <p>Zmodyfikuj filtry albo skontaktuj sie z nami - mozemy przygotowac oferte indywidualna.</p>
+                    <h3>Brak wyników</h3>
+                    <p>Zmodyfikuj filtry albo skontaktuj się z nami - możemy przygotować ofertę indywidualną.</p>
                 </div>
             )}
 
@@ -169,12 +169,12 @@ export default function OfferCatalog({ apartments }) {
                 <div>
                     <h2>Potrzebujesz pomocy w wyborze mieszkania?</h2>
                     <p>
-                        Doradzimy Ci najlepszy uklad i budzet, porownamy dostepne lokale i umowimy spotkanie na budowie.
+                        Doradzimy Ci najlepszy układ i budżet, porównamy dostępne lokale i umówimy spotkanie na budowie.
                     </p>
                 </div>
                 <div className={styles.conversionActions}>
-                    <a href="tel:+48884869402" className="btn">Zadzwon teraz</a>
-                    <Link href="/kontakt" className="btn btnOutline">Napisz wiadomosc</Link>
+                    <a href="tel:+48884869402" className="btn">Zadzwoń teraz</a>
+                    <Link href="/kontakt" className="btn btnOutline">Napisz wiadomość</Link>
                 </div>
             </section>
         </div>

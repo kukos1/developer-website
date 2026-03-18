@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react';
 import styles from './ApartmentCard.module.css';
 
 const STATUS_TEXT = {
-    available: 'Dostepne',
+    available: 'Dostępne',
     reserved: 'Zarezerwowane',
     sold: 'Sprzedane'
 };
@@ -92,10 +92,10 @@ export default function ApartmentCard({
 
                 {hasMultipleImages && (
                     <>
-                        <button type="button" className={`${styles.sliderBtn} ${styles.prevBtn}`} onClick={prevImage} aria-label="Poprzednie zdjecie">
+                        <button type="button" className={`${styles.sliderBtn} ${styles.prevBtn}`} onClick={prevImage} aria-label="Poprzednie zdjęcie">
                             &lt;
                         </button>
-                        <button type="button" className={`${styles.sliderBtn} ${styles.nextBtn}`} onClick={nextImage} aria-label="Nastepne zdjecie">
+                        <button type="button" className={`${styles.sliderBtn} ${styles.nextBtn}`} onClick={nextImage} aria-label="Następne zdjęcie">
                             &gt;
                         </button>
                         <div className={styles.imageCounter}>
@@ -114,25 +114,25 @@ export default function ApartmentCard({
 
                 <div className={styles.details}>
                     <span>{rooms != null ? `${rooms} pok.` : 'Brak danych'}</span>
-                    <span>{area != null ? `${area} m2` : 'Brak metrazu'}</span>
-                    <span>{floor != null ? `Pietro ${floor}` : 'Pietro ?'}</span>
+                    <span>{area != null ? `${area} m²` : 'Brak metrażu'}</span>
+                    <span>{floor != null ? `Piętro ${floor}` : 'Piętro ?'}</span>
                 </div>
 
                 <div className={styles.price}>{formatPrice(apartment.price)}</div>
 
                 <p className={`${styles.description} ${isExpanded ? styles.descriptionExpanded : ''}`}>
-                    {apartment.description || 'Opis mieszkania bedzie dostepny wkrotce.'}
+                    {apartment.description || 'Opis mieszkania będzie dostępny wkrótce.'}
                 </p>
 
                 <div className={styles.actionRow}>
                     {expandable && (
                         <button type="button" className={styles.expandBtn} onClick={toggleExpanded}>
-                            {isExpanded ? 'Zwin opis' : 'Rozwin opis'}
+                            {isExpanded ? 'Zwiń opis' : 'Rozwiń opis'}
                         </button>
                     )}
                     {detailsHref && (
                         <Link href={detailsHref} className={styles.detailsLink}>
-                            Przejdz do podstrony
+                            Przejdź do podstrony
                         </Link>
                     )}
                 </div>

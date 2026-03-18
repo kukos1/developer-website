@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -7,10 +7,10 @@ import { usePathname } from 'next/navigation';
 import styles from './Navbar.module.css';
 
 const NAV_ITEMS = [
-    { href: '/', label: 'Strona Glowna' },
+    { href: '/', label: 'Strona Główna' },
     { href: '/inwestycje', label: 'Inwestycje' },
     { href: '/oferta', label: 'Oferta' },
-    { href: '/blog', label: 'Aktualnosci' },
+    { href: '/blog', label: 'Aktualności' },
     { href: '/o-nas', label: 'O nas' },
     { href: '/kontakt', label: 'Kontakt' },
     { href: '/admin', label: 'Panel' }
@@ -43,7 +43,7 @@ export default function Navbar() {
                     <Image src="/logo.jpg" alt="Logo firmy" width={52} height={52} className={styles.logoImg} />
                     <div className={styles.logoText}>
                         <span className={styles.companyName}>PAWEŁ SOŁDAŃSKI</span>
-                        <span className={styles.tagline}>Uslugi Remontowo Budowlane</span>
+                        <span className={styles.tagline}>Usługi remontowo-budowlane</span>
                     </div>
                 </Link>
 

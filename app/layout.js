@@ -1,4 +1,4 @@
-import { Inter, Playfair_Display } from 'next/font/google';
+﻿import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 
 const inter = Inter({
@@ -15,7 +15,7 @@ const playfair = Playfair_Display({
 
 export const metadata = {
   title: 'PAWEŁ SOŁDAŃSKI - Nowoczesne Inwestycje Budowlane',
-  description: 'Budujemy przyszlosc, tworzymy przestrzen.',
+  description: 'Budujemy przyszłość, tworzymy przestrzeń.',
   icons: {
     icon: [
       { url: '/brand-favicon.svg', type: 'image/svg+xml' },

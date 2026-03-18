@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -53,13 +53,13 @@ export default async function Home() {
         <div className={styles.heroBgDecoration}></div>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>
-            Budujemy przyszlosc,
+            Budujemy przyszłość,
             <br />
-            tworzymy przestrzen
+            tworzymy przestrzeń
           </h1>
           <p className={styles.heroSubtitle}>
             Realizujemy nowoczesne inwestycje mieszkaniowe i komercyjne.
-            Projektujemy miejsca, w ktorych dobrze sie zyje i pracuje.
+            Projektujemy miejsca, w których dobrze się żyje i pracuje.
           </p>
           <div className={styles.heroBtns}>
             <Link href="/inwestycje" className="btn shimmer">
@@ -82,18 +82,18 @@ export default async function Home() {
           <div className={styles.whyUsGrid}>
             <div className={styles.whyUsItem}>
               <div className={styles.whyUsIcon}>01</div>
-              <h3>Doswiadczenie</h3>
-              <p>Ponad 15 lat praktyki i sprawdzony proces realizacji od projektu po finalny odbior.</p>
+              <h3>Doświadczenie</h3>
+              <p>Ponad 15 lat praktyki i sprawdzony proces realizacji od projektu po finalny odbiór.</p>
             </div>
             <div className={styles.whyUsItem}>
               <div className={styles.whyUsIcon}>02</div>
-              <h3>Jakosc</h3>
-              <p>Stawiamy na trwale materialy, funkcjonalne uklady i wysoki standard wykonania.</p>
+              <h3>Jakość</h3>
+              <p>Stawiamy na trwałe materiały, funkcjonalne układy i wysoki standard wykonania.</p>
             </div>
             <div className={styles.whyUsItem}>
               <div className={styles.whyUsIcon}>03</div>
               <h3>Wsparcie</h3>
-              <p>Prowadzimy klienta przez caly proces zakupu i pomagamy dopasowac najlepsza oferte.</p>
+              <p>Prowadzimy klienta przez cały proces zakupu i pomagamy dopasować najlepszą ofertę.</p>
             </div>
           </div>
         </div>
@@ -119,14 +119,14 @@ export default async function Home() {
                 <h3>{investment.name || 'Inwestycja'}</h3>
                 <p className={styles.investmentLocation}>Lokalizacja: {investment.location || 'w przygotowaniu'}</p>
                 <p className={styles.investmentDesc}>
-                  {investment.description || 'Szczegoly inwestycji pojawia sie wkrotce.'}
+                  {investment.description || 'Szczegóły inwestycji pojawią się wkrótce.'}
                 </p>
-                <span className={styles.investmentLink}>Poznaj szczegoly</span>
+                <span className={styles.investmentLink}>Poznaj szczegóły</span>
               </div>
             </Link>
           ))}
           {featuredInvestments.length === 0 && (
-            <p className={styles.noInvestments}>Brak inwestycji do wyswietlenia.</p>
+            <p className={styles.noInvestments}>Brak inwestycji do wyświetlenia.</p>
           )}
         </div>
         <div className={styles.centerMt4}>
@@ -138,7 +138,7 @@ export default async function Home() {
 
       <section className={`section ${styles.bgLight}`}>
         <div className="container">
-          <h2 className={styles.sectionTitle}>Aktualna oferta mieszkan</h2>
+          <h2 className={styles.sectionTitle}>Aktualna oferta mieszkań</h2>
           <div className={styles.featuredGrid}>
             {featuredApartments.map((apartment) => (
               <ApartmentCard
@@ -150,7 +150,7 @@ export default async function Home() {
           </div>
           {featuredApartments.length === 0 && (
             <p className={styles.noApartments}>
-              Aktualnie nie mamy mieszkan ze statusem &quot;dostepne&quot;. Skontaktuj sie z nami po oferte indywidualna.
+              Aktualnie nie mamy mieszkań ze statusem &quot;dostępne&quot;. Skontaktuj się z nami po ofertę indywidualną.
             </p>
           )}
           <div className={styles.centerMt4}>

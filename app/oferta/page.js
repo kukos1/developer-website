@@ -1,4 +1,4 @@
-import Navbar from '@/components/Navbar';
+﻿import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import OfferCatalog from '@/components/OfferCatalog';
 import { supabase } from '@/lib/supabase';
@@ -49,18 +49,18 @@ export default async function OfferPage() {
         <main>
             <Navbar />
             <section className={`container section ${styles.pageShell}`}>
-                <h1 className={styles.title}>Pelna oferta mieszkan</h1>
+                <h1 className={styles.title}>Pełna oferta mieszkań</h1>
                 <p className={styles.subtitle}>
-                    Wybierz mieszkanie po parametrach, rozwin opis na karcie i przejdz do dedykowanej podstrony lokalu.
+                    Wybierz mieszkanie po parametrach, rozwiń opis na karcie i przejdź do dedykowanej podstrony lokalu.
                 </p>
 
                 <div className={styles.quickStats}>
                     <article className={styles.statCard}>
-                        <span>Liczba mieszkan</span>
+                        <span>Liczba mieszkań</span>
                         <strong>{apartments.length}</strong>
                     </article>
                     <article className={styles.statCard}>
-                        <span>Dostepne teraz</span>
+                        <span>Dostępne teraz</span>
                         <strong>{availableCount}</strong>
                     </article>
                     <article className={styles.statCard}>
@@ -68,7 +68,7 @@ export default async function OfferPage() {
                         <strong>{reservedCount}</strong>
                     </article>
                     <article className={styles.statCard}>
-                        <span>Srednia cena</span>
+                        <span>Średnia cena</span>
                         <strong>{formatPrice(averagePrice)}</strong>
                     </article>
                 </div>

@@ -25,13 +25,13 @@ export default function ContactPage() {
             const payload = await response.json().catch(() => null);
 
             if (!response.ok) {
-                throw new Error(payload?.error || 'Nie udalo sie wyslac wiadomosci.');
+                throw new Error(payload?.error || 'Nie udało się wysłać wiadomości.');
             }
 
             setSubmitted(true);
             setFormData({ name: '', email: '', message: '' });
         } catch (error) {
-            setSubmitError(error?.message || 'Nie udalo sie wyslac wiadomosci.');
+            setSubmitError(error?.message || 'Nie udało się wysłać wiadomości.');
         } finally {
             setIsSubmitting(false);
         }
@@ -51,14 +51,14 @@ export default function ContactPage() {
 
                 <div className={styles.contactGrid}>
                     <div className={styles.contactInfo}>
-                        <h2 className={styles.contactHeading}>Skontaktuj sie z nami</h2>
+                        <h2 className={styles.contactHeading}>Skontaktuj się z nami</h2>
                         <div className={styles.contactDetails}>
                             <p className={styles.companyName}>PAWEŁ SOŁDAŃSKI</p>
                             <p className={styles.mb05}>Gorzewo 31C</p>
                             <p className={styles.mb15}>09-200 Sierpc</p>
 
                             <p className={styles.mb05}><strong>Tel:</strong> 884-869-402 / 728-863-971</p>
-                            <p className={styles.mb15}><strong>Email:</strong> solbet@wp.pl</p>
+                            <p className={styles.mb15}><strong>E-mail:</strong> solbet@wp.pl</p>
 
                             <p className={`${styles.textSmallGray} ${styles.mt2}`}>
                                 NIP: 7761235157
@@ -79,14 +79,14 @@ export default function ContactPage() {
                         <h3>Napisz do nas</h3>
                         {submitted ? (
                             <div className={styles.successMessage}>
-                                Dziekujemy za wiadomosc. Skontaktujemy sie z Toba wkrotce.
+                                Dziękujemy za wiadomość. Skontaktujemy się z Tobą wkrótce.
                             </div>
                         ) : (
                             <form onSubmit={handleSubmit} className={styles.formGroup}>
                                 <input
                                     type="text"
                                     name="name"
-                                    placeholder="Imie i nazwisko"
+                                    placeholder="Imię i nazwisko"
                                     required
                                     value={formData.name}
                                     onChange={handleChange}
@@ -95,7 +95,7 @@ export default function ContactPage() {
                                 <input
                                     type="email"
                                     name="email"
-                                    placeholder="Adres email"
+                                    placeholder="Adres e-mail"
                                     required
                                     value={formData.email}
                                     onChange={handleChange}
@@ -103,7 +103,7 @@ export default function ContactPage() {
                                 />
                                 <textarea
                                     name="message"
-                                    placeholder="Twoja wiadomosc..."
+                                    placeholder="Twoja wiadomość..."
                                     rows="5"
                                     required
                                     value={formData.message}
@@ -114,7 +114,7 @@ export default function ContactPage() {
                                     <p className={styles.errorMessage}>{submitError}</p>
                                 ) : null}
                                 <button type="submit" disabled={isSubmitting} className={`btn shimmer ${styles.fullWidth}`}>
-                                    {isSubmitting ? 'Wysylanie...' : 'Wyslij wiadomosc'}
+                                    {isSubmitting ? 'Wysyłanie...' : 'Wyślij wiadomość'}
                                 </button>
                             </form>
                         )}

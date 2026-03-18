@@ -1,5 +1,4 @@
-﻿import Link from 'next/link';
-import Image from 'next/image';
+﻿import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
@@ -30,7 +29,7 @@ export default async function BlogPage() {
         <main>
             <Navbar />
             <section className="section container" style={{ paddingTop: '140px' }}>
-                <h1 className={styles.sectionTitle} style={{ textAlign: 'left', marginBottom: '4rem' }}>Aktualnosci</h1>
+                <h1 className={styles.sectionTitle} style={{ textAlign: 'left', marginBottom: '4rem' }}>Aktualności</h1>
 
                 <div style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '4rem' }}>
                     {news.map((item) => (
@@ -72,7 +71,7 @@ export default async function BlogPage() {
                     ))}
 
                     {news.length === 0 && (
-                        <p style={{ textAlign: 'center', color: '#888' }}>Brak aktualnosci.</p>
+                        <p style={{ textAlign: 'center', color: '#888' }}>Brak aktualności.</p>
                     )}
                 </div>
             </section>

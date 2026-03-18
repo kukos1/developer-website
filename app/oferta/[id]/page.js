@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -9,7 +9,7 @@ import styles from './page.module.css';
 export const dynamic = 'force-dynamic';
 
 const STATUS_LABEL = {
-    available: 'Dostepne',
+    available: 'Dostępne',
     reserved: 'Zarezerwowane',
     sold: 'Sprzedane'
 };
@@ -86,7 +86,7 @@ export default async function ApartmentDetailsPage({ params }) {
             <Navbar />
             <section className={`container section ${styles.pageShell}`}>
                 <Link href="/oferta" className={styles.backLink}>
-                    &larr; Wroc do oferty
+                    &larr; Wróć do oferty
                 </Link>
 
                 <div className={styles.layout}>
@@ -96,7 +96,7 @@ export default async function ApartmentDetailsPage({ params }) {
 
                     <aside className={styles.infoCard}>
                         <span className={`${styles.statusBadge} ${STATUS_CLASS[apartment.status] || styles.statusAvailable}`}>
-                            {STATUS_LABEL[apartment.status] || 'Dostepne'}
+                            {STATUS_LABEL[apartment.status] || 'Dostępne'}
                         </span>
                         <h1 className={styles.title}>{apartment.name || 'Mieszkanie'}</h1>
 
@@ -106,11 +106,11 @@ export default async function ApartmentDetailsPage({ params }) {
                                 <strong>{rooms != null ? rooms : '-'}</strong>
                             </li>
                             <li>
-                                <span>Metraz</span>
-                                <strong>{area != null ? `${area} m2` : '-'}</strong>
+                                <span>Metraż</span>
+                                <strong>{area != null ? `${area} m²` : '-'}</strong>
                             </li>
                             <li>
-                                <span>Pietro</span>
+                                <span>Piętro</span>
                                 <strong>{floor != null ? floor : '-'}</strong>
                             </li>
                         </ul>
@@ -120,7 +120,7 @@ export default async function ApartmentDetailsPage({ params }) {
                         <div className={styles.descriptionCard}>
                             <h2>Opis mieszkania</h2>
                             <p className={styles.description}>
-                                {apartment.description || 'Opis tego mieszkania pojawi sie wkrotce.'}
+                                {apartment.description || 'Opis tego mieszkania pojawi się wkrótce.'}
                             </p>
                         </div>
 

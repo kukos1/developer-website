@@ -5,7 +5,7 @@
 }
 
 .filterCard {
-    background: #fff;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
     border: 1px solid #e8edf2;
     border-radius: 18px;
     padding: 1.4rem;
@@ -36,6 +36,7 @@
     font-size: 0.9rem;
     color: #1b2a40;
     background: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .field input:focus,
@@ -88,6 +89,7 @@
     justify-content: space-between;
     gap: 1rem;
     align-items: center;
+    box-shadow: 0 14px 30px rgba(13, 43, 79, 0.08);
 }
 
 .conversionPanel h2 {

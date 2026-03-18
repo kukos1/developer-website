@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import styles from './Footer.module.css';
 
 export default function Footer() {
@@ -8,16 +8,16 @@ export default function Footer() {
                 <div className={styles.footerGrid}>
                     <div>
                         <h3 className={styles.footerLogo}>PAWEŁ SOŁDAŃSKI</h3>
-                        <p className={styles.footerTagline}>Uslugi Remontowo Budowlane</p>
+                        <p className={styles.footerTagline}>Usługi remontowo-budowlane</p>
                     </div>
 
                     <div>
                         <h4 className={styles.footerTitle}>Nawigacja</h4>
                         <ul className={styles.footerLinks}>
-                            <li><Link href="/">Strona Glowna</Link></li>
+                            <li><Link href="/">Strona Główna</Link></li>
                             <li><Link href="/inwestycje">Inwestycje</Link></li>
                             <li><Link href="/oferta">Oferta</Link></li>
-                            <li><Link href="/blog">Aktualnosci</Link></li>
+                            <li><Link href="/blog">Aktualności</Link></li>
                         </ul>
                     </div>
 
@@ -36,7 +36,7 @@ export default function Footer() {
                             09-200 Sierpc<br /><br />
                             <a href="tel:+48884869402">Tel: 884-869-402</a><br />
                             <a href="tel:+48728863971">Tel: 728-863-971</a><br />
-                            <a href="mailto:solbet@wp.pl">Email: solbet@wp.pl</a><br /><br />
+                            <a href="mailto:solbet@wp.pl">E-mail: solbet@wp.pl</a><br /><br />
                             NIP: 7761235157
                         </p>
                     </div>
@@ -44,8 +44,8 @@ export default function Footer() {
 
                 <div className={styles.footerBottom}>
                     <p>
-                        &copy; {new Date().getFullYear()} PAWEŁ SOŁDAŃSKI - Uslugi Remontowo Budowlane.
-                        Wszelkie prawa zastrzezone.
+                        &copy; {new Date().getFullYear()} PAWEŁ SOŁDAŃSKI - Usługi remontowo-budowlane.
+                        Wszelkie prawa zastrzeżone.
                     </p>
                 </div>
             </div>

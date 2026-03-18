@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
@@ -19,7 +19,7 @@ export default function ApartmentGallery({ images, altBase }) {
     if (!hasImages) {
         return (
             <div className={styles.placeholder}>
-                Brak zdjec dla tego mieszkania.
+                Brak zdjęć dla tego mieszkania.
             </div>
         );
     }
@@ -37,7 +37,7 @@ export default function ApartmentGallery({ images, altBase }) {
             <div className={styles.viewer}>
                 <Image
                     src={preparedImages[activeIndex]}
-                    alt={`${altBase || 'Mieszkanie'} - zdjecie ${activeIndex + 1}`}
+                    alt={`${altBase || 'Mieszkanie'} - zdjęcie ${activeIndex + 1}`}
                     fill
                     sizes="(max-width: 1024px) 100vw, 64vw"
                     className={styles.mainImage}
@@ -46,10 +46,10 @@ export default function ApartmentGallery({ images, altBase }) {
 
                 {hasMultipleImages && (
                     <>
-                        <button type="button" className={`${styles.navButton} ${styles.navPrev}`} onClick={showPrevious} aria-label="Poprzednie zdjecie">
+                        <button type="button" className={`${styles.navButton} ${styles.navPrev}`} onClick={showPrevious} aria-label="Poprzednie zdjęcie">
                             &lt;
                         </button>
-                        <button type="button" className={`${styles.navButton} ${styles.navNext}`} onClick={showNext} aria-label="Nastepne zdjecie">
+                        <button type="button" className={`${styles.navButton} ${styles.navNext}`} onClick={showNext} aria-label="Następne zdjęcie">
                             &gt;
                         </button>
                         <div className={styles.counter}>
@@ -67,7 +67,7 @@ export default function ApartmentGallery({ images, altBase }) {
                             key={`${imageUrl}-${index}`}
                             className={`${styles.thumbButton} ${index === activeIndex ? styles.thumbButtonActive : ''}`}
                             onClick={() => setActiveIndex(index)}
-                            aria-label={`Otworz zdjecie ${index + 1}`}
+                            aria-label={`Otwórz zdjęcie ${index + 1}`}
                         >
                             <Image
                                 src={imageUrl}

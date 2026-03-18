@@ -61,7 +61,7 @@ export default async function InvestmentsPage() {
                                         borderRadius: '8px',
                                         color: '#999'
                                     }}>
-                                        Brak zdjecia
+                                        Brak zdjęcia
                                     </div>
                                 )}
                             </div>
@@ -75,14 +75,14 @@ export default async function InvestmentsPage() {
                                     {inv.description}
                                 </p>
                                 <Link href="/kontakt" className="btn">
-                                    Zapytaj o szczegoly
+                                    Zapytaj o szczegóły
                                 </Link>
                             </div>
                         </div>
                     ))}
 
                     {investments.length === 0 && (
-                        <p style={{ textAlign: 'center', color: '#888' }}>Brak inwestycji do wyswietlenia.</p>
+                        <p style={{ textAlign: 'center', color: '#888' }}>Brak inwestycji do wyświetlenia.</p>
                     )}
                 </div>
             </section>

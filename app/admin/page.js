@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
@@ -16,7 +16,7 @@ const STORAGE_FOLDER_BY_ENDPOINT = {
 const LEAD_STATUSES = [
     ['new', 'Nowy'],
     ['in_progress', 'W trakcie'],
-    ['closed', 'Zakonczony'],
+    ['closed', 'Zakończony'],
     ['spam', 'Spam']
 ];
 
@@ -128,7 +128,7 @@ export default function AdminPage() {
                     <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
                         <input
                             type="password"
-                            placeholder="Haslo"
+                            placeholder="Hasło"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             style={{ padding: '0.75rem', borderRadius: '4px', border: '1px solid #333', background: '#111', color: '#fff' }}
@@ -175,7 +175,7 @@ function AdminContent({ onLogout }) {
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <h1 style={{ margin: 0 }}>Zarzadzanie trescia</h1>
+                <h1 style={{ margin: 0 }}>Zarządzanie treścią</h1>
                 <button type="button" className="btn btnOutline" onClick={onLogout}>Wyloguj</button>
             </div>
 
@@ -225,7 +225,7 @@ function ApartmentsManager() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm('Usunac ten rekord?')) return;
+        if (!confirm('Usuńac ten rekord?')) return;
         await requestJson(`/api/apartments?id=${id}`, { method: 'DELETE' });
         await fetchItems();
     };
@@ -258,13 +258,13 @@ function ApartmentsManager() {
                     onCancel={() => setView('list')}
                     fields={[
                         { name: 'name', label: 'Nazwa / Numer', type: 'text' },
-                        { name: 'floor', label: 'Pietro', type: 'number' },
+                        { name: 'floor', label: 'Piętro', type: 'number' },
                         { name: 'rooms', label: 'Pokoje', type: 'number' },
                         { name: 'area', label: 'Powierzchnia (m2)', type: 'number', step: '0.1' },
                         { name: 'price', label: 'Cena (PLN)', type: 'number' },
-                        { name: 'status', label: 'Status', type: 'select', options: [['available', 'Dostepne'], ['reserved', 'Zarezerwowane'], ['sold', 'Sprzedane']] },
+                        { name: 'status', label: 'Status', type: 'select', options: [['available', 'Dostępne'], ['reserved', 'Zarezerwowane'], ['sold', 'Sprzedane']] },
                         { name: 'description', label: 'Opis', type: 'textarea' },
-                        { name: 'images', label: 'Zdjecia', type: 'file', multiple: true }
+                        { name: 'images', label: 'Zdjęcia', type: 'file', multiple: true }
                     ]}
                 />
             )}
@@ -303,7 +303,7 @@ function InvestmentsManager() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm('Usunac ten rekord?')) return;
+        if (!confirm('Usuńac ten rekord?')) return;
         await requestJson(`/api/investments?id=${id}`, { method: 'DELETE' });
         await fetchItems();
     };
@@ -313,7 +313,7 @@ function InvestmentsManager() {
             {view === 'list' ? (
                 <>
                     <button className="btn" onClick={() => { setEditingItem(null); setView('form'); }} style={{ marginBottom: '1rem' }}>
-                        Dodaj inwestycje
+                        Dodaj inwestycję
                     </button>
                     <div style={{ display: 'grid', gap: '1rem' }}>
                         {items.map((item) => (
@@ -338,7 +338,7 @@ function InvestmentsManager() {
                         { name: 'name', label: 'Nazwa inwestycji', type: 'text' },
                         { name: 'location', label: 'Lokalizacja', type: 'text' },
                         { name: 'description', label: 'Opis', type: 'textarea' },
-                        { name: 'images', label: 'Zdjecia', type: 'file', multiple: true }
+                        { name: 'images', label: 'Zdjęcia', type: 'file', multiple: true }
                     ]}
                 />
             )}
@@ -377,7 +377,7 @@ function BlogManager() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm('Usunac ten rekord?')) return;
+        if (!confirm('Usuńac ten rekord?')) return;
         await requestJson(`/api/news?id=${id}`, { method: 'DELETE' });
         await fetchItems();
     };
@@ -409,10 +409,10 @@ function BlogManager() {
                     onSuccess={() => { void fetchItems(); setView('list'); }}
                     onCancel={() => setView('list')}
                     fields={[
-                        { name: 'title', label: 'Tytul', type: 'text' },
+                        { name: 'title', label: 'Tytuł', type: 'text' },
                         { name: 'date', label: 'Data', type: 'date' },
-                        { name: 'content', label: 'Tresc', type: 'textarea' },
-                        { name: 'image', label: 'Zdjecie glowne', type: 'file', multiple: false }
+                        { name: 'content', label: 'Treść', type: 'textarea' },
+                        { name: 'image', label: 'Zdjęcie główne', type: 'file', multiple: false }
                     ]}
                 />
             )}
@@ -435,7 +435,7 @@ function LeadsManager() {
             setItems(Array.isArray(payload) ? payload : []);
         } catch (error) {
             console.error(error);
-            setSubmitError(error?.message || 'Nie udalo sie pobrac leadow.');
+            setSubmitError(error?.message || 'Nie udało się pobrać leadów.');
         } finally {
             setLoading(false);
         }
@@ -450,7 +450,7 @@ function LeadsManager() {
                 if (isActive) setItems(Array.isArray(payload) ? payload : []);
             } catch (error) {
                 console.error(error);
-                if (isActive) setSubmitError(error?.message || 'Nie udalo sie pobrac leadow.');
+                if (isActive) setSubmitError(error?.message || 'Nie udało się pobrać leadów.');
             } finally {
                 if (isActive) setLoading(false);
             }
@@ -475,12 +475,12 @@ function LeadsManager() {
             )));
         } catch (error) {
             console.error(error);
-            setSubmitError(error?.message || 'Nie udalo sie zaktualizowac statusu.');
+            setSubmitError(error?.message || 'Nie udało się zaktualizować statusu.');
         }
     };
 
     const handleDeleteLead = async (id) => {
-        if (!confirm('Usunac ten lead?')) return;
+        if (!confirm('Usuńac ten lead?')) return;
 
         setDeletingId(id);
         setSubmitError('');
@@ -492,7 +492,7 @@ function LeadsManager() {
             setItems((prev) => prev.filter((item) => item.id !== id));
         } catch (error) {
             console.error(error);
-            setSubmitError(error?.message || 'Nie udalo sie usunac leada.');
+            setSubmitError(error?.message || 'Nie udało się usunąć leada.');
         } finally {
             setDeletingId('');
         }
@@ -512,7 +512,7 @@ function LeadsManager() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
                 <p style={{ color: '#48637f', margin: 0 }}>Nowe zapytania z formularza kontaktowego.</p>
                 <button type="button" className="btn btnOutline" onClick={() => void fetchItems()} disabled={loading}>
-                    {loading ? 'Odswiezanie...' : 'Odswiez liste'}
+                    {loading ? 'Odświeżanie...' : 'Odśwież listę'}
                 </button>
             </div>
 
@@ -538,7 +538,7 @@ function LeadsManager() {
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
                             <p style={{ margin: 0, fontSize: '0.85rem', color: '#5f738a' }}>
-                                Zrodlo: <strong>{item.source || 'kontakt'}</strong>
+                                Źródło: <strong>{item.source || 'kontakt'}</strong>
                             </p>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
@@ -575,7 +575,7 @@ function LeadsManager() {
                                         fontWeight: 700
                                     }}
                                 >
-                                    {deletingId === item.id ? 'Usuwanie...' : 'Usun'}
+                                    {deletingId === item.id ? 'Usuwanie...' : 'Usuń'}
                                 </button>
                             </div>
                         </div>
@@ -584,7 +584,7 @@ function LeadsManager() {
             })}
 
             {!loading && items.length === 0 && (
-                <p style={{ color: '#5f738a', margin: 0 }}>Brak leadow. Formularz kontaktowy nie wyslal jeszcze zadnych zapytan.</p>
+                <p style={{ color: '#5f738a', margin: 0 }}>Brak leadów. Formularz kontaktowy nie wysłał jeszcze żadnych zapytań.</p>
             )}
         </div>
     );
@@ -615,7 +615,7 @@ function RecordRow({ title, subtitle, onEdit, onDelete }) {
                     Edytuj
                 </button>
                 <button type="button" onClick={onDelete} style={{ cursor: 'pointer', background: 'none', border: 'none', color: '#cf2e2e', fontWeight: 700 }}>
-                    Usun
+                    Usuń
                 </button>
             </div>
         </div>
@@ -728,7 +728,7 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
             onSuccess();
         } catch (error) {
             console.error(error);
-            setSubmitError(error?.message || 'Blad polaczenia');
+            setSubmitError(error?.message || 'Błąd połączenia');
         } finally {
             setLoading(false);
         }
@@ -737,7 +737,7 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
     const getSelectedFilesInfo = (fieldName) => {
         const selected = files[fieldName];
         if (!selected) return '';
-        if (Array.isArray(selected)) return `Wybrano plikow: ${selected.length}`;
+        if (Array.isArray(selected)) return `Wybrano plików: ${selected.length}`;
         return `Wybrany plik: ${selected.name}`;
     };
 
@@ -822,3 +822,4 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
         </div>
     );
 }
+
