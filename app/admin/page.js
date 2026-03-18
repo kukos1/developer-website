@@ -13,6 +13,13 @@ const STORAGE_FOLDER_BY_ENDPOINT = {
     '/api/news': 'news'
 };
 
+const LEAD_STATUSES = [
+    ['new', 'Nowy'],
+    ['in_progress', 'W trakcie'],
+    ['closed', 'Zakonczony'],
+    ['spam', 'Spam']
+];
+
 function sanitizeFileName(fileName) {
     return fileName
         .normalize('NFKD')
@@ -176,11 +183,13 @@ function AdminContent({ onLogout }) {
                 <button type="button" onClick={() => setActiveTab('apartments')} style={tabStyle('apartments')}>Mieszkania</button>
                 <button type="button" onClick={() => setActiveTab('investments')} style={tabStyle('investments')}>Inwestycje</button>
                 <button type="button" onClick={() => setActiveTab('blog')} style={tabStyle('blog')}>Blog / News</button>
+                <button type="button" onClick={() => setActiveTab('leads')} style={tabStyle('leads')}>Leady</button>
             </div>
 
             {activeTab === 'apartments' && <ApartmentsManager />}
             {activeTab === 'investments' && <InvestmentsManager />}
             {activeTab === 'blog' && <BlogManager />}
+            {activeTab === 'leads' && <LeadsManager />}
         </div>
     );
 }
@@ -406,6 +415,137 @@ function BlogManager() {
                         { name: 'image', label: 'Zdjecie glowne', type: 'file', multiple: false }
                     ]}
                 />
+            )}
+        </div>
+    );
+}
+
+function LeadsManager() {
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [submitError, setSubmitError] = useState('');
+
+    const fetchItems = async () => {
+        setLoading(true);
+        setSubmitError('');
+
+        try {
+            const payload = await requestJson('/api/leads', { cache: 'no-store' });
+            setItems(Array.isArray(payload) ? payload : []);
+        } catch (error) {
+            console.error(error);
+            setSubmitError(error?.message || 'Nie udalo sie pobrac leadow.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        let isActive = true;
+
+        const loadItems = async () => {
+            try {
+                const payload = await requestJson('/api/leads', { cache: 'no-store' });
+                if (isActive) setItems(Array.isArray(payload) ? payload : []);
+            } catch (error) {
+                console.error(error);
+                if (isActive) setSubmitError(error?.message || 'Nie udalo sie pobrac leadow.');
+            } finally {
+                if (isActive) setLoading(false);
+            }
+        };
+
+        setLoading(true);
+        setSubmitError('');
+        void loadItems();
+        return () => { isActive = false; };
+    }, []);
+
+    const updateLeadStatus = async (id, status) => {
+        setSubmitError('');
+        try {
+            await requestJson('/api/leads', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status })
+            });
+            setItems((prev) => prev.map((item) => (
+                item.id === id ? { ...item, status } : item
+            )));
+        } catch (error) {
+            console.error(error);
+            setSubmitError(error?.message || 'Nie udalo sie zaktualizowac statusu.');
+        }
+    };
+
+    const cardStyle = {
+        background: '#f8fbff',
+        border: '1px solid #d8e4f1',
+        padding: '1rem',
+        borderRadius: '10px',
+        display: 'grid',
+        gap: '0.7rem'
+    };
+
+    return (
+        <div style={{ display: 'grid', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
+                <p style={{ color: '#48637f', margin: 0 }}>Nowe zapytania z formularza kontaktowego.</p>
+                <button type="button" className="btn btnOutline" onClick={() => void fetchItems()} disabled={loading}>
+                    {loading ? 'Odswiezanie...' : 'Odswiez liste'}
+                </button>
+            </div>
+
+            {submitError && <p style={{ color: '#cf2e2e', margin: 0 }}>{submitError}</p>}
+
+            {items.map((item) => {
+                const createdAt = item.created_at ? new Date(item.created_at).toLocaleString('pl-PL') : '-';
+
+                return (
+                    <div key={item.id} style={cardStyle}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.8rem', flexWrap: 'wrap' }}>
+                            <div>
+                                <strong style={{ color: '#12345c' }}>{item.name}</strong>
+                                <p style={{ margin: '0.35rem 0 0', color: '#4d647d', fontSize: '0.92rem' }}>
+                                    {item.email}
+                                    {item.phone ? ` | ${item.phone}` : ''}
+                                </p>
+                            </div>
+                            <span style={{ color: '#5f738a', fontSize: '0.85rem' }}>{createdAt}</span>
+                        </div>
+
+                        <p style={{ margin: 0, color: '#29435f', lineHeight: 1.6 }}>{item.message}</p>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: '#5f738a' }}>
+                                Zrodlo: <strong>{item.source || 'kontakt'}</strong>
+                            </p>
+
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#29435f' }}>
+                                Status:
+                                <select
+                                    value={item.status || 'new'}
+                                    onChange={(event) => void updateLeadStatus(item.id, event.target.value)}
+                                    style={{
+                                        border: '1px solid #c4d3e3',
+                                        borderRadius: '6px',
+                                        padding: '0.45rem 0.65rem',
+                                        background: '#fff',
+                                        color: '#12345c'
+                                    }}
+                                >
+                                    {LEAD_STATUSES.map(([value, label]) => (
+                                        <option key={value} value={value}>{label}</option>
+                                    ))}
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                );
+            })}
+
+            {!loading && items.length === 0 && (
+                <p style={{ color: '#5f738a', margin: 0 }}>Brak leadow. Formularz kontaktowy nie wyslal jeszcze zadnych zapytan.</p>
             )}
         </div>
     );

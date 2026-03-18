@@ -7,14 +7,39 @@ import styles from '../page.module.css';
 export default function ContactPage() {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [submitted, setSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setSubmitted(true);
-        setFormData({ name: '', email: '', message: '' });
+        setSubmitError('');
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch('/api/leads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const payload = await response.json().catch(() => null);
+
+            if (!response.ok) {
+                throw new Error(payload?.error || 'Nie udalo sie wyslac wiadomosci.');
+            }
+
+            setSubmitted(true);
+            setFormData({ name: '', email: '', message: '' });
+        } catch (error) {
+            setSubmitError(error?.message || 'Nie udalo sie wyslac wiadomosci.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleChange = (e) => {
+        if (submitted) setSubmitted(false);
+        if (submitError) setSubmitError('');
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
@@ -85,7 +110,12 @@ export default function ContactPage() {
                                     onChange={handleChange}
                                     className={styles.formInput}
                                 ></textarea>
-                                <button type="submit" className={`btn shimmer ${styles.fullWidth}`}>Wyslij wiadomosc</button>
+                                {submitError ? (
+                                    <p className={styles.errorMessage}>{submitError}</p>
+                                ) : null}
+                                <button type="submit" disabled={isSubmitting} className={`btn shimmer ${styles.fullWidth}`}>
+                                    {isSubmitting ? 'Wysylanie...' : 'Wyslij wiadomosc'}
+                                </button>
                             </form>
                         )}
                     </div>

@@ -33,6 +33,24 @@ CREATE TABLE news (
   image TEXT
 );
 
+-- Create leads table
+CREATE TABLE leads (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  message TEXT NOT NULL,
+  source TEXT DEFAULT 'contact_form',
+  status TEXT DEFAULT 'new',
+  admin_note TEXT,
+  responded_at TIMESTAMP WITH TIME ZONE,
+  CONSTRAINT leads_status_check CHECK (status IN ('new', 'in_progress', 'closed', 'spam'))
+);
+
+CREATE INDEX leads_status_idx ON leads(status);
+CREATE INDEX leads_created_at_idx ON leads(created_at DESC);
+
 -- 1. Create storage bucket for uploads (if not exists)
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('uploads', 'uploads', true)

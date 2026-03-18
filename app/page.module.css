@@ -451,6 +451,15 @@
   font-weight: 600;
 }
 
+.errorMessage {
+  padding: 0.85rem;
+  background-color: #fff0f0;
+  color: #a82424;
+  border-radius: 10px;
+  border: 1px solid #f1c4c4;
+  font-weight: 600;
+}
+
 .fullWidth {
   width: 100%;
 }

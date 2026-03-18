@@ -42,3 +42,4 @@ npm run start
 - Logowanie odbywa sie po stronie serwera (`/api/admin/login`)
 - Sesja jest przechowywana w cookie `httpOnly`
 - Endpointy modyfikujace CMS (`POST/PUT/DELETE`) wymagaja aktywnej sesji admina
+- Zakladka `Leady` pobiera zapytania z formularza kontaktowego i pozwala zmieniac ich status
