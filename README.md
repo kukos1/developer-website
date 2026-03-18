@@ -43,3 +43,4 @@ npm run start
 - Sesja jest przechowywana w cookie `httpOnly`
 - Endpointy modyfikujace CMS (`POST/PUT/DELETE`) wymagaja aktywnej sesji admina
 - Zakladka `Leady` pobiera zapytania z formularza kontaktowego i pozwala zmieniac ich status
+- Jesli tabela `leads` nie istnieje, API zapisuje leady awaryjnie do `uploads/leads/*.json` w Supabase Storage
