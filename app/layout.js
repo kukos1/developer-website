@@ -15,7 +15,15 @@ const playfair = Playfair_Display({
 
 export const metadata = {
   title: 'PAWEL SOLDANSKI - Nowoczesne Inwestycje Budowlane',
-  description: 'Budujemy przyszlosc, tworzymy przestrzen.'
+  description: 'Budujemy przyszlosc, tworzymy przestrzen.',
+  icons: {
+    icon: [
+      { url: '/brand-favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico' }
+    ],
+    shortcut: '/brand-favicon.svg',
+    apple: '/logo.jpg'
+  }
 };
 
 export default function RootLayout({ children }) {
