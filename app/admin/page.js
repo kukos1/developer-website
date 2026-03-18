@@ -424,6 +424,7 @@ function LeadsManager() {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [submitError, setSubmitError] = useState('');
+    const [deletingId, setDeletingId] = useState('');
 
     const fetchItems = async () => {
         setLoading(true);
@@ -478,6 +479,25 @@ function LeadsManager() {
         }
     };
 
+    const handleDeleteLead = async (id) => {
+        if (!confirm('Usunac ten lead?')) return;
+
+        setDeletingId(id);
+        setSubmitError('');
+
+        try {
+            await requestJson(`/api/leads?id=${encodeURIComponent(id)}`, {
+                method: 'DELETE'
+            });
+            setItems((prev) => prev.filter((item) => item.id !== id));
+        } catch (error) {
+            console.error(error);
+            setSubmitError(error?.message || 'Nie udalo sie usunac leada.');
+        } finally {
+            setDeletingId('');
+        }
+    };
+
     const cardStyle = {
         background: '#f8fbff',
         border: '1px solid #d8e4f1',
@@ -521,24 +541,43 @@ function LeadsManager() {
                                 Zrodlo: <strong>{item.source || 'kontakt'}</strong>
                             </p>
 
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#29435f' }}>
-                                Status:
-                                <select
-                                    value={item.status || 'new'}
-                                    onChange={(event) => void updateLeadStatus(item.id, event.target.value)}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#29435f' }}>
+                                    Status:
+                                    <select
+                                        value={item.status || 'new'}
+                                        onChange={(event) => void updateLeadStatus(item.id, event.target.value)}
+                                        disabled={deletingId === item.id}
+                                        style={{
+                                            border: '1px solid #c4d3e3',
+                                            borderRadius: '6px',
+                                            padding: '0.45rem 0.65rem',
+                                            background: '#fff',
+                                            color: '#12345c'
+                                        }}
+                                    >
+                                        {LEAD_STATUSES.map(([value, label]) => (
+                                            <option key={value} value={value}>{label}</option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => void handleDeleteLead(item.id)}
+                                    disabled={deletingId === item.id}
                                     style={{
-                                        border: '1px solid #c4d3e3',
+                                        border: '1px solid #ebc4c4',
                                         borderRadius: '6px',
-                                        padding: '0.45rem 0.65rem',
-                                        background: '#fff',
-                                        color: '#12345c'
+                                        padding: '0.45rem 0.75rem',
+                                        background: '#fff5f5',
+                                        color: '#a82424',
+                                        cursor: 'pointer',
+                                        fontWeight: 700
                                     }}
                                 >
-                                    {LEAD_STATUSES.map(([value, label]) => (
-                                        <option key={value} value={value}>{label}</option>
-                                    ))}
-                                </select>
-                            </label>
+                                    {deletingId === item.id ? 'Usuwanie...' : 'Usun'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 );
