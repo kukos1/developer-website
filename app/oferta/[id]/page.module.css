@@ -18,67 +18,23 @@
 
 .layout {
     display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 1.5rem;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 1.7rem;
     align-items: start;
 }
 
 .mediaColumn {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
-}
-
-.mainImageWrap {
-    position: relative;
-    border-radius: 18px;
-    overflow: hidden;
-    min-height: 420px;
-    background: #f0f4f8;
-    border: 1px solid #dde7f1;
-}
-
-.mainImage {
-    object-fit: cover;
-}
-
-.thumbGrid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.5rem;
-}
-
-.thumb {
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-    min-height: 96px;
-    border: 1px solid #dbe4ee;
-}
-
-.thumbImage {
-    object-fit: cover;
-}
-
-.placeholder {
-    min-height: 420px;
-    border-radius: 18px;
-    border: 1px dashed #ced8e3;
-    background: #f8fbfe;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #7a8ca5;
-    text-align: center;
-    padding: 2rem;
+    gap: 1rem;
 }
 
 .infoCard {
-    background: #fff;
-    border: 1px solid #e0e8f0;
-    border-radius: 18px;
-    padding: 1.5rem;
-    box-shadow: 0 14px 40px rgba(13, 35, 64, 0.08);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid #dce6f1;
+    border-radius: 20px;
+    padding: 1.55rem;
+    box-shadow: 0 16px 44px rgba(12, 33, 61, 0.1);
     position: sticky;
     top: 100px;
 }
@@ -147,6 +103,7 @@
 .description {
     color: #55667d;
     line-height: 1.75;
+    margin: 0;
 }
 
 .actions {
@@ -154,6 +111,20 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.65rem;
+}
+
+.descriptionCard {
+    margin-top: 1rem;
+    border: 1px solid #e5ecf5;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 1rem;
+}
+
+.descriptionCard h2 {
+    margin: 0 0 0.55rem 0;
+    font-size: 1rem;
+    color: #213754;
 }
 
 @media (max-width: 1024px) {
@@ -164,21 +135,9 @@
     .infoCard {
         position: static;
     }
-
-    .mainImageWrap {
-        min-height: 360px;
-    }
 }
 
 @media (max-width: 700px) {
-    .thumbGrid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .mainImageWrap {
-        min-height: 280px;
-    }
-
     .infoCard {
         padding: 1.1rem;
     }

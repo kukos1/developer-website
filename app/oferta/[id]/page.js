@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
+import ApartmentGallery from '@/components/ApartmentGallery';
 import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -63,7 +63,14 @@ async function getApartmentById(id) {
 }
 
 export default async function ApartmentDetailsPage({ params }) {
-    const apartment = await getApartmentById(params.id);
+    const resolvedParams = await params;
+    const apartmentId = resolvedParams?.id;
+
+    if (!apartmentId) {
+        notFound();
+    }
+
+    const apartment = await getApartmentById(apartmentId);
 
     if (!apartment) {
         notFound();
@@ -84,40 +91,7 @@ export default async function ApartmentDetailsPage({ params }) {
 
                 <div className={styles.layout}>
                     <div className={styles.mediaColumn}>
-                        {images.length > 0 ? (
-                            <>
-                                <div className={styles.mainImageWrap}>
-                                    <Image
-                                        src={images[0]}
-                                        alt={apartment.name || 'Mieszkanie'}
-                                        fill
-                                        sizes="(max-width: 1024px) 100vw, 52vw"
-                                        className={styles.mainImage}
-                                        priority
-                                    />
-                                </div>
-
-                                {images.length > 1 && (
-                                    <div className={styles.thumbGrid}>
-                                        {images.slice(1, 5).map((imageUrl) => (
-                                            <div key={imageUrl} className={styles.thumb}>
-                                                <Image
-                                                    src={imageUrl}
-                                                    alt={apartment.name || 'Dodatkowe zdjecie'}
-                                                    fill
-                                                    sizes="(max-width: 1024px) 33vw, 15vw"
-                                                    className={styles.thumbImage}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </>
-                        ) : (
-                            <div className={styles.placeholder}>
-                                Brak zdjec dla tego mieszkania.
-                            </div>
-                        )}
+                        <ApartmentGallery images={images} altBase={apartment.name || 'Mieszkanie'} />
                     </div>
 
                     <aside className={styles.infoCard}>
@@ -143,12 +117,15 @@ export default async function ApartmentDetailsPage({ params }) {
 
                         <p className={styles.price}>{formatPrice(apartment.price)}</p>
 
-                        <p className={styles.description}>
-                            {apartment.description || 'Opis tego mieszkania pojawi sie wkrotce.'}
-                        </p>
+                        <div className={styles.descriptionCard}>
+                            <h2>Opis mieszkania</h2>
+                            <p className={styles.description}>
+                                {apartment.description || 'Opis tego mieszkania pojawi sie wkrotce.'}
+                            </p>
+                        </div>
 
                         <div className={styles.actions}>
-                            <Link href={`/kontakt?mieszkanie=${apartment.id}`} className="btn">
+                            <Link href={`/kontakt?mieszkanie=${apartmentId}`} className="btn">
                                 Zapytaj o to mieszkanie
                             </Link>
                             <Link href="/oferta" className="btn btnOutline">
