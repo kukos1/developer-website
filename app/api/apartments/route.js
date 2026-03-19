@@ -72,12 +72,43 @@ function mergeImageUrls(existingImages, newImages) {
     return [...new Set([...existingImages, ...newImages].filter(Boolean))];
 }
 
+function isMissingSortOrderColumnError(error) {
+    const message = typeof error?.message === 'string' ? error.message : '';
+    return error?.code === '42703' || message.includes('sort_order');
+}
+
+async function getNextSortOrder() {
+    const { data, error } = await supabaseServer
+        .from('apartments')
+        .select('sort_order')
+        .order('sort_order', { ascending: false, nullsFirst: false })
+        .limit(1);
+
+    if (error) {
+        if (isMissingSortOrderColumnError(error)) return null;
+        throw error;
+    }
+
+    const currentMax = Number(data?.[0]?.sort_order);
+    if (!Number.isInteger(currentMax) || currentMax < 0) return 0;
+
+    return currentMax + 1;
+}
+
 export async function GET() {
     try {
-        const { data, error } = await supabaseServer
+        let { data, error } = await supabaseServer
             .from('apartments')
             .select('*')
+            .order('sort_order', { ascending: true, nullsFirst: false })
             .order('created_at', { ascending: false });
+
+        if (error && isMissingSortOrderColumnError(error)) {
+            ({ data, error } = await supabaseServer
+                .from('apartments')
+                .select('*')
+                .order('created_at', { ascending: false }));
+        }
 
         if (error) throw error;
         return NextResponse.json(data);
@@ -140,6 +171,7 @@ export async function POST(request) {
         }
 
         const description = toTrimmedString(formData.get('description')) || null;
+        const sortOrder = await getNextSortOrder();
 
         const images = await collectImageUrls({
             supabase: supabaseServer,
@@ -147,19 +179,25 @@ export async function POST(request) {
             folder: 'apartments'
         });
 
+        const payload = {
+            name,
+            floor: floorResult.value,
+            rooms: roomsResult.value,
+            area: areaResult.value,
+            price: priceResult.value,
+            status,
+            description,
+            images,
+            image_url: images[0] || null
+        };
+
+        if (sortOrder != null) {
+            payload.sort_order = sortOrder;
+        }
+
         const { data, error } = await supabaseServer
             .from('apartments')
-            .insert([{
-                name,
-                floor: floorResult.value,
-                rooms: roomsResult.value,
-                area: areaResult.value,
-                price: priceResult.value,
-                status,
-                description,
-                images,
-                image_url: images[0] || null
-            }])
+            .insert([payload])
             .select()
             .single();
 
@@ -251,6 +289,18 @@ export async function PUT(request) {
 
         if (formData.has('description')) {
             updates.description = toTrimmedString(formData.get('description')) || null;
+        }
+
+        if (formData.has('sort_order')) {
+            const sortOrderResult = parseOptionalNumber(formData.get('sort_order'), {
+                fieldName: 'sort_order',
+                integer: true,
+                min: 0
+            });
+            if (!sortOrderResult.ok || sortOrderResult.value == null) {
+                return NextResponse.json({ error: 'Invalid sort_order.' }, { status: 400 });
+            }
+            updates.sort_order = sortOrderResult.value;
         }
 
         const imageInputs = formData.getAll('images');

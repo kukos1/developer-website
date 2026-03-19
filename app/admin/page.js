@@ -195,15 +195,49 @@ function AdminContent({ onLogout }) {
     );
 }
 
+function getSortOrderValue(item, fallbackOrder) {
+    const parsed = Number(item?.sort_order);
+    if (Number.isInteger(parsed) && parsed >= 0) return parsed;
+    return fallbackOrder;
+}
+
+function normalizeItemsForOrdering(items) {
+    if (!Array.isArray(items)) return [];
+
+    return items
+        .map((item, index) => ({
+            ...item,
+            sort_order: getSortOrderValue(item, index)
+        }))
+        .sort((a, b) => a.sort_order - b.sort_order);
+}
+
+async function persistSortOrderSwap(endpoint, firstItem, secondItem) {
+    const payloads = [firstItem, secondItem];
+
+    await Promise.all(payloads.map((item) => {
+        const data = new FormData();
+        data.append('id', item.id);
+        data.append('sort_order', String(item.sort_order));
+
+        return requestJson(endpoint, {
+            method: 'PUT',
+            body: data
+        });
+    }));
+}
+
 function ApartmentsManager() {
     const [items, setItems] = useState([]);
     const [view, setView] = useState('list');
     const [editingItem, setEditingItem] = useState(null);
+    const [reorderingId, setReorderingId] = useState('');
+    const [reorderError, setReorderError] = useState('');
 
     const fetchItems = async () => {
         try {
             const payload = await requestJson('/api/apartments');
-            setItems(Array.isArray(payload) ? payload : []);
+            setItems(normalizeItemsForOrdering(payload));
         } catch (error) {
             console.error(error);
         }
@@ -215,7 +249,7 @@ function ApartmentsManager() {
         const loadItems = async () => {
             try {
                 const payload = await requestJson('/api/apartments');
-                if (isActive) setItems(Array.isArray(payload) ? payload : []);
+                if (isActive) setItems(normalizeItemsForOrdering(payload));
             } catch (error) {
                 console.error(error);
             }
@@ -231,6 +265,42 @@ function ApartmentsManager() {
         await fetchItems();
     };
 
+    const handleReorder = async (id, direction) => {
+        const currentIndex = items.findIndex((item) => item.id === id);
+        if (currentIndex === -1) return;
+
+        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        if (targetIndex < 0 || targetIndex >= items.length) return;
+
+        const currentItem = items[currentIndex];
+        const targetItem = items[targetIndex];
+
+        const currentSortOrder = getSortOrderValue(currentItem, currentIndex);
+        const targetSortOrder = getSortOrderValue(targetItem, targetIndex);
+
+        const currentUpdated = { ...currentItem, sort_order: targetSortOrder };
+        const targetUpdated = { ...targetItem, sort_order: currentSortOrder };
+
+        const reorderedItems = [...items];
+        reorderedItems[currentIndex] = targetUpdated;
+        reorderedItems[targetIndex] = currentUpdated;
+
+        setItems(reorderedItems);
+        setReorderingId(id);
+        setReorderError('');
+
+        try {
+            await persistSortOrderSwap('/api/apartments', currentUpdated, targetUpdated);
+            setItems(normalizeItemsForOrdering(reorderedItems));
+        } catch (error) {
+            console.error(error);
+            setReorderError(error?.message || 'Nie udało się zapisać kolejności.');
+            await fetchItems();
+        } finally {
+            setReorderingId('');
+        }
+    };
+
     return (
         <div>
             {view === 'list' ? (
@@ -238,14 +308,20 @@ function ApartmentsManager() {
                     <button className="btn" onClick={() => { setEditingItem(null); setView('form'); }} style={{ marginBottom: '1rem' }}>
                         Dodaj mieszkanie
                     </button>
+                    {reorderError && <p style={{ color: '#cf2e2e', margin: '0 0 1rem' }}>{reorderError}</p>}
                     <div style={{ display: 'grid', gap: '1rem' }}>
-                        {items.map((item) => (
+                        {items.map((item, index) => (
                             <RecordRow
                                 key={item.id}
                                 title={item.name}
                                 subtitle={item.status}
                                 onEdit={() => { setEditingItem(item); setView('form'); }}
                                 onDelete={() => void handleDelete(item.id)}
+                                onMoveUp={() => void handleReorder(item.id, 'up')}
+                                onMoveDown={() => void handleReorder(item.id, 'down')}
+                                disableMoveUp={index === 0 || Boolean(reorderingId)}
+                                disableMoveDown={index === items.length - 1 || Boolean(reorderingId)}
+                                isMoving={reorderingId === item.id}
                             />
                         ))}
                         {items.length === 0 && <p>Brak danych.</p>}
@@ -277,11 +353,13 @@ function InvestmentsManager() {
     const [items, setItems] = useState([]);
     const [view, setView] = useState('list');
     const [editingItem, setEditingItem] = useState(null);
+    const [reorderingId, setReorderingId] = useState('');
+    const [reorderError, setReorderError] = useState('');
 
     const fetchItems = async () => {
         try {
             const payload = await requestJson('/api/investments');
-            setItems(Array.isArray(payload) ? payload : []);
+            setItems(normalizeItemsForOrdering(payload));
         } catch (error) {
             console.error(error);
         }
@@ -293,7 +371,7 @@ function InvestmentsManager() {
         const loadItems = async () => {
             try {
                 const payload = await requestJson('/api/investments');
-                if (isActive) setItems(Array.isArray(payload) ? payload : []);
+                if (isActive) setItems(normalizeItemsForOrdering(payload));
             } catch (error) {
                 console.error(error);
             }
@@ -309,6 +387,42 @@ function InvestmentsManager() {
         await fetchItems();
     };
 
+    const handleReorder = async (id, direction) => {
+        const currentIndex = items.findIndex((item) => item.id === id);
+        if (currentIndex === -1) return;
+
+        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        if (targetIndex < 0 || targetIndex >= items.length) return;
+
+        const currentItem = items[currentIndex];
+        const targetItem = items[targetIndex];
+
+        const currentSortOrder = getSortOrderValue(currentItem, currentIndex);
+        const targetSortOrder = getSortOrderValue(targetItem, targetIndex);
+
+        const currentUpdated = { ...currentItem, sort_order: targetSortOrder };
+        const targetUpdated = { ...targetItem, sort_order: currentSortOrder };
+
+        const reorderedItems = [...items];
+        reorderedItems[currentIndex] = targetUpdated;
+        reorderedItems[targetIndex] = currentUpdated;
+
+        setItems(reorderedItems);
+        setReorderingId(id);
+        setReorderError('');
+
+        try {
+            await persistSortOrderSwap('/api/investments', currentUpdated, targetUpdated);
+            setItems(normalizeItemsForOrdering(reorderedItems));
+        } catch (error) {
+            console.error(error);
+            setReorderError(error?.message || 'Nie udało się zapisać kolejności.');
+            await fetchItems();
+        } finally {
+            setReorderingId('');
+        }
+    };
+
     return (
         <div>
             {view === 'list' ? (
@@ -316,14 +430,20 @@ function InvestmentsManager() {
                     <button className="btn" onClick={() => { setEditingItem(null); setView('form'); }} style={{ marginBottom: '1rem' }}>
                         Dodaj inwestycję
                     </button>
+                    {reorderError && <p style={{ color: '#cf2e2e', margin: '0 0 1rem' }}>{reorderError}</p>}
                     <div style={{ display: 'grid', gap: '1rem' }}>
-                        {items.map((item) => (
+                        {items.map((item, index) => (
                             <RecordRow
                                 key={item.id}
                                 title={item.name}
                                 subtitle={item.location}
                                 onEdit={() => { setEditingItem(item); setView('form'); }}
                                 onDelete={() => void handleDelete(item.id)}
+                                onMoveUp={() => void handleReorder(item.id, 'up')}
+                                onMoveDown={() => void handleReorder(item.id, 'down')}
+                                disableMoveUp={index === 0 || Boolean(reorderingId)}
+                                disableMoveDown={index === items.length - 1 || Boolean(reorderingId)}
+                                isMoving={reorderingId === item.id}
                             />
                         ))}
                         {items.length === 0 && <p>Brak danych.</p>}
@@ -352,11 +472,13 @@ function BlogManager() {
     const [items, setItems] = useState([]);
     const [view, setView] = useState('list');
     const [editingItem, setEditingItem] = useState(null);
+    const [reorderingId, setReorderingId] = useState('');
+    const [reorderError, setReorderError] = useState('');
 
     const fetchItems = async () => {
         try {
             const payload = await requestJson('/api/news');
-            setItems(Array.isArray(payload) ? payload : []);
+            setItems(normalizeItemsForOrdering(payload));
         } catch (error) {
             console.error(error);
         }
@@ -368,7 +490,7 @@ function BlogManager() {
         const loadItems = async () => {
             try {
                 const payload = await requestJson('/api/news');
-                if (isActive) setItems(Array.isArray(payload) ? payload : []);
+                if (isActive) setItems(normalizeItemsForOrdering(payload));
             } catch (error) {
                 console.error(error);
             }
@@ -384,6 +506,42 @@ function BlogManager() {
         await fetchItems();
     };
 
+    const handleReorder = async (id, direction) => {
+        const currentIndex = items.findIndex((item) => item.id === id);
+        if (currentIndex === -1) return;
+
+        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        if (targetIndex < 0 || targetIndex >= items.length) return;
+
+        const currentItem = items[currentIndex];
+        const targetItem = items[targetIndex];
+
+        const currentSortOrder = getSortOrderValue(currentItem, currentIndex);
+        const targetSortOrder = getSortOrderValue(targetItem, targetIndex);
+
+        const currentUpdated = { ...currentItem, sort_order: targetSortOrder };
+        const targetUpdated = { ...targetItem, sort_order: currentSortOrder };
+
+        const reorderedItems = [...items];
+        reorderedItems[currentIndex] = targetUpdated;
+        reorderedItems[targetIndex] = currentUpdated;
+
+        setItems(reorderedItems);
+        setReorderingId(id);
+        setReorderError('');
+
+        try {
+            await persistSortOrderSwap('/api/news', currentUpdated, targetUpdated);
+            setItems(normalizeItemsForOrdering(reorderedItems));
+        } catch (error) {
+            console.error(error);
+            setReorderError(error?.message || 'Nie udało się zapisać kolejności.');
+            await fetchItems();
+        } finally {
+            setReorderingId('');
+        }
+    };
+
     return (
         <div>
             {view === 'list' ? (
@@ -391,14 +549,20 @@ function BlogManager() {
                     <button className="btn" onClick={() => { setEditingItem(null); setView('form'); }} style={{ marginBottom: '1rem' }}>
                         Dodaj news
                     </button>
+                    {reorderError && <p style={{ color: '#cf2e2e', margin: '0 0 1rem' }}>{reorderError}</p>}
                     <div style={{ display: 'grid', gap: '1rem' }}>
-                        {items.map((item) => (
+                        {items.map((item, index) => (
                             <RecordRow
                                 key={item.id}
                                 title={item.title}
                                 subtitle={item.date}
                                 onEdit={() => { setEditingItem(item); setView('form'); }}
                                 onDelete={() => void handleDelete(item.id)}
+                                onMoveUp={() => void handleReorder(item.id, 'up')}
+                                onMoveDown={() => void handleReorder(item.id, 'down')}
+                                disableMoveUp={index === 0 || Boolean(reorderingId)}
+                                disableMoveDown={index === items.length - 1 || Boolean(reorderingId)}
+                                isMoving={reorderingId === item.id}
                             />
                         ))}
                         {items.length === 0 && <p>Brak danych.</p>}
@@ -592,7 +756,25 @@ function LeadsManager() {
     );
 }
 
-function RecordRow({ title, subtitle, onEdit, onDelete }) {
+function RecordRow({
+    title,
+    subtitle,
+    onEdit,
+    onDelete,
+    onMoveUp,
+    onMoveDown,
+    disableMoveUp = false,
+    disableMoveDown = false,
+    isMoving = false
+}) {
+    const actionButtonStyle = {
+        cursor: 'pointer',
+        background: 'none',
+        border: 'none',
+        color: '#12345c',
+        fontWeight: 700
+    };
+
     return (
         <div
             style={{
@@ -603,7 +785,8 @@ function RecordRow({ title, subtitle, onEdit, onDelete }) {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                gap: '0.8rem'
+                gap: '0.8rem',
+                flexWrap: 'wrap'
             }}
         >
             <div>
@@ -612,13 +795,52 @@ function RecordRow({ title, subtitle, onEdit, onDelete }) {
                     <span style={{ marginLeft: '0.8rem', color: '#567', fontSize: '0.9rem' }}>{subtitle}</span>
                 ) : null}
             </div>
-            <div>
-                <button type="button" onClick={onEdit} style={{ marginRight: '0.8rem', cursor: 'pointer', background: 'none', border: 'none', color: '#12345c', fontWeight: 700 }}>
+            <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                {onMoveUp && onMoveDown ? (
+                    <>
+                        <button
+                            type="button"
+                            onClick={onMoveUp}
+                            disabled={disableMoveUp}
+                            style={{
+                                border: '1px solid #c4d3e3',
+                                borderRadius: '6px',
+                                background: disableMoveUp ? '#eef3f8' : '#fff',
+                                color: disableMoveUp ? '#9aabbd' : '#12345c',
+                                cursor: disableMoveUp ? 'not-allowed' : 'pointer',
+                                padding: '0.3rem 0.55rem',
+                                fontWeight: 700
+                            }}
+                            aria-label="Przesuń w górę"
+                        >
+                            ↑
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onMoveDown}
+                            disabled={disableMoveDown}
+                            style={{
+                                border: '1px solid #c4d3e3',
+                                borderRadius: '6px',
+                                background: disableMoveDown ? '#eef3f8' : '#fff',
+                                color: disableMoveDown ? '#9aabbd' : '#12345c',
+                                cursor: disableMoveDown ? 'not-allowed' : 'pointer',
+                                padding: '0.3rem 0.55rem',
+                                fontWeight: 700
+                            }}
+                            aria-label="Przesuń w dół"
+                        >
+                            ↓
+                        </button>
+                    </>
+                ) : null}
+                <button type="button" onClick={onEdit} style={actionButtonStyle}>
                     Edytuj
                 </button>
-                <button type="button" onClick={onDelete} style={{ cursor: 'pointer', background: 'none', border: 'none', color: '#cf2e2e', fontWeight: 700 }}>
+                <button type="button" onClick={onDelete} style={{ ...actionButtonStyle, color: '#cf2e2e' }}>
                     Usuń
                 </button>
+                {isMoving ? <span style={{ color: '#567', fontSize: '0.84rem' }}>Zapisywanie...</span> : null}
             </div>
         </div>
     );

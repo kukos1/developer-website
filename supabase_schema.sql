@@ -8,6 +8,7 @@ CREATE TABLE apartments (
   area NUMERIC,
   price NUMERIC,
   status TEXT DEFAULT 'available',
+  sort_order INTEGER,
   description TEXT,
   images TEXT[] DEFAULT '{}',
   image_url TEXT
@@ -19,6 +20,7 @@ CREATE TABLE investments (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   name TEXT NOT NULL,
   location TEXT,
+  sort_order INTEGER,
   visualization_link TEXT,
   description TEXT,
   images TEXT[] DEFAULT '{}'
@@ -30,6 +32,7 @@ CREATE TABLE news (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   title TEXT NOT NULL,
   date DATE DEFAULT CURRENT_DATE,
+  sort_order INTEGER,
   content TEXT,
   image TEXT
 );
@@ -51,6 +54,9 @@ CREATE TABLE leads (
 
 CREATE INDEX leads_status_idx ON leads(status);
 CREATE INDEX leads_created_at_idx ON leads(created_at DESC);
+CREATE INDEX apartments_sort_order_idx ON apartments(sort_order);
+CREATE INDEX investments_sort_order_idx ON investments(sort_order);
+CREATE INDEX news_sort_order_idx ON news(sort_order);
 
 -- 1. Create storage bucket for uploads (if not exists)
 INSERT INTO storage.buckets (id, name, public) 

@@ -6,6 +6,11 @@ import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
+function isMissingSortOrderColumnError(error) {
+    const message = typeof error?.message === 'string' ? error.message : '';
+    return error?.code === '42703' || message.includes('sort_order');
+}
+
 function toNumber(value) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
@@ -22,10 +27,18 @@ function formatPrice(value) {
 
 async function getApartments() {
     try {
-        const { data, error } = await supabase
+        let { data, error } = await supabase
             .from('apartments')
             .select('*')
+            .order('sort_order', { ascending: true, nullsFirst: false })
             .order('created_at', { ascending: false });
+
+        if (error && isMissingSortOrderColumnError(error)) {
+            ({ data, error } = await supabase
+                .from('apartments')
+                .select('*')
+                .order('created_at', { ascending: false }));
+        }
 
         if (error) throw error;
         return data || [];

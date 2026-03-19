@@ -31,12 +31,57 @@ function mergeImageUrls(existingImages, newImages) {
     return [...new Set([...existingImages, ...newImages].filter(Boolean))];
 }
 
+function parseOptionalInteger(value, fieldName) {
+    if (value == null) return { ok: true, value: null };
+
+    const raw = String(value).trim();
+    if (!raw) return { ok: true, value: null };
+
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 0) {
+        return { ok: false, error: `Invalid ${fieldName}.` };
+    }
+
+    return { ok: true, value: parsed };
+}
+
+function isMissingSortOrderColumnError(error) {
+    const message = typeof error?.message === 'string' ? error.message : '';
+    return error?.code === '42703' || message.includes('sort_order');
+}
+
+async function getNextSortOrder() {
+    const { data, error } = await supabaseServer
+        .from('investments')
+        .select('sort_order')
+        .order('sort_order', { ascending: false, nullsFirst: false })
+        .limit(1);
+
+    if (error) {
+        if (isMissingSortOrderColumnError(error)) return null;
+        throw error;
+    }
+
+    const currentMax = Number(data?.[0]?.sort_order);
+    if (!Number.isInteger(currentMax) || currentMax < 0) return 0;
+
+    return currentMax + 1;
+}
+
 export async function GET() {
     try {
-        const { data, error } = await supabaseServer
+        let { data, error } = await supabaseServer
             .from('investments')
             .select('*')
+            .order('sort_order', { ascending: true, nullsFirst: false })
             .order('created_at', { ascending: false });
+
+        if (error && isMissingSortOrderColumnError(error)) {
+            ({ data, error } = await supabaseServer
+                .from('investments')
+                .select('*')
+                .order('created_at', { ascending: false }));
+        }
 
         if (error) throw error;
         return NextResponse.json(data);
@@ -57,6 +102,7 @@ export async function POST(request) {
         const location = toTrimmedString(formData.get('location')) || null;
         const description = toTrimmedString(formData.get('description')) || null;
         const visualizationLink = toTrimmedString(formData.get('visualization_link')) || null;
+        const sortOrder = await getNextSortOrder();
 
         if (!name) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -69,15 +115,21 @@ export async function POST(request) {
             prefix: 'inv-'
         });
 
+        const payload = {
+            name,
+            location,
+            description,
+            visualization_link: visualizationLink,
+            images
+        };
+
+        if (sortOrder != null) {
+            payload.sort_order = sortOrder;
+        }
+
         const { data, error } = await supabaseServer
             .from('investments')
-            .insert([{
-                name,
-                location,
-                description,
-                visualization_link: visualizationLink,
-                images
-            }])
+            .insert([payload])
             .select()
             .single();
 
@@ -114,6 +166,13 @@ export async function PUT(request) {
         if (formData.has('location')) updates.location = toTrimmedString(formData.get('location')) || null;
         if (formData.has('description')) updates.description = toTrimmedString(formData.get('description')) || null;
         if (formData.has('visualization_link')) updates.visualization_link = toTrimmedString(formData.get('visualization_link')) || null;
+        if (formData.has('sort_order')) {
+            const sortOrderResult = parseOptionalInteger(formData.get('sort_order'), 'sort_order');
+            if (!sortOrderResult.ok || sortOrderResult.value == null) {
+                return NextResponse.json({ error: 'Invalid sort_order.' }, { status: 400 });
+            }
+            updates.sort_order = sortOrderResult.value;
+        }
 
         const imageInputs = formData.getAll('images');
         const removedImages = parseRemovedImages(formData.getAll('removedImages'));

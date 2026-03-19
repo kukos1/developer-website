@@ -7,12 +7,25 @@ import styles from '../page.module.css';
 
 export const dynamic = 'force-dynamic';
 
+function isMissingSortOrderColumnError(error) {
+    const message = typeof error?.message === 'string' ? error.message : '';
+    return error?.code === '42703' || message.includes('sort_order');
+}
+
 async function getNews() {
     try {
-        const { data, error } = await supabase
+        let { data, error } = await supabase
             .from('news')
             .select('*')
+            .order('sort_order', { ascending: true, nullsFirst: false })
             .order('date', { ascending: false });
+
+        if (error && isMissingSortOrderColumnError(error)) {
+            ({ data, error } = await supabase
+                .from('news')
+                .select('*')
+                .order('date', { ascending: false }));
+        }
 
         if (error) throw error;
         return data || [];

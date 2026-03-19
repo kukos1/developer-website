@@ -23,10 +23,23 @@ function compareByDateDesc(a, b) {
     return bDate - aDate;
 }
 
+function compareByCmsOrder(a, b) {
+    const aOrder = toNumber(a.sort_order);
+    const bOrder = toNumber(b.sort_order);
+
+    if (aOrder != null && bOrder != null) return aOrder - bOrder;
+    if (aOrder != null) return -1;
+    if (bOrder != null) return 1;
+
+    return compareByDateDesc(a, b);
+}
+
 function sortApartments(items, sortKey) {
     const sorted = [...items];
 
     switch (sortKey) {
+        case 'manual':
+            return sorted.sort(compareByCmsOrder);
         case 'priceAsc':
             return sorted.sort((a, b) => (toNumber(a.price) ?? Number.MAX_SAFE_INTEGER) - (toNumber(b.price) ?? Number.MAX_SAFE_INTEGER));
         case 'priceDesc':
@@ -48,7 +61,7 @@ export default function OfferCatalog({ apartments }) {
     const [status, setStatus] = useState('all');
     const [roomsMin, setRoomsMin] = useState('0');
     const [priceMax, setPriceMax] = useState('');
-    const [sortBy, setSortBy] = useState('newest');
+    const [sortBy, setSortBy] = useState('manual');
 
     const preparedApartments = useMemo(() => {
         return (apartments || []).map((item) => ({
@@ -132,6 +145,7 @@ export default function OfferCatalog({ apartments }) {
                     <label className={styles.field}>
                         <span>Sortowanie</span>
                         <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                            <option value="manual">Kolejność z CMS</option>
                             <option value="newest">Najnowsze</option>
                             <option value="priceAsc">Cena rosnąco</option>
                             <option value="priceDesc">Cena malejąco</option>
