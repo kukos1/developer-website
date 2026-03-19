@@ -9,7 +9,7 @@ function prepareImages(images) {
     return images.filter((image) => typeof image === 'string' && image.trim().length > 0);
 }
 
-export default function ApartmentGallery({ images, altBase }) {
+export default function ApartmentGallery({ images, altBase, viewerMinHeight = 520, placeholderText }) {
     const preparedImages = useMemo(() => prepareImages(images), [images]);
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -19,7 +19,7 @@ export default function ApartmentGallery({ images, altBase }) {
     if (!hasImages) {
         return (
             <div className={styles.placeholder}>
-                Brak zdjęć dla tego mieszkania.
+                {placeholderText || 'Brak zdjęć dla tego rekordu.'}
             </div>
         );
     }
@@ -34,7 +34,7 @@ export default function ApartmentGallery({ images, altBase }) {
 
     return (
         <section className={styles.gallery}>
-            <div className={styles.viewer}>
+            <div className={styles.viewer} style={{ '--viewer-min-height': `${viewerMinHeight}px` }}>
                 <Image
                     src={preparedImages[activeIndex]}
                     alt={`${altBase || 'Mieszkanie'} - zdjęcie ${activeIndex + 1}`}

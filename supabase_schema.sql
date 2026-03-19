@@ -19,6 +19,7 @@ CREATE TABLE investments (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   name TEXT NOT NULL,
   location TEXT,
+  visualization_link TEXT,
   description TEXT,
   images TEXT[] DEFAULT '{}'
 );

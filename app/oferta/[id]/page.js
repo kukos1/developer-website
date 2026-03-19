@@ -91,7 +91,11 @@ export default async function ApartmentDetailsPage({ params }) {
 
                 <div className={styles.layout}>
                     <div className={styles.mediaColumn}>
-                        <ApartmentGallery images={images} altBase={apartment.name || 'Mieszkanie'} />
+                        <ApartmentGallery
+                            images={images}
+                            altBase={apartment.name || 'Mieszkanie'}
+                            placeholderText="Brak zdjęć dla tego mieszkania."
+                        />
                     </div>
 
                     <aside className={styles.infoCard}>

@@ -11,6 +11,22 @@ function getUploadErrorResponse(error, fallbackMessage) {
     return NextResponse.json({ error: message }, { status });
 }
 
+function toTrimmedString(value) {
+    return typeof value === 'string' ? value.trim() : '';
+}
+
+function parseRemovedImages(inputs) {
+    const removed = new Set();
+
+    for (const input of inputs) {
+        if (typeof input !== 'string') continue;
+        const trimmed = input.trim();
+        if (trimmed) removed.add(trimmed);
+    }
+
+    return removed;
+}
+
 function mergeImageUrls(existingImages, newImages) {
     return [...new Set([...existingImages, ...newImages].filter(Boolean))];
 }
@@ -37,9 +53,10 @@ export async function POST(request) {
 
     try {
         const formData = await request.formData();
-        const name = formData.get('name');
-        const location = formData.get('location');
-        const description = formData.get('description');
+        const name = toTrimmedString(formData.get('name'));
+        const location = toTrimmedString(formData.get('location')) || null;
+        const description = toTrimmedString(formData.get('description')) || null;
+        const visualizationLink = toTrimmedString(formData.get('visualization_link')) || null;
 
         if (!name) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -58,6 +75,7 @@ export async function POST(request) {
                 name,
                 location,
                 description,
+                visualization_link: visualizationLink,
                 images
             }])
             .select()
@@ -79,19 +97,28 @@ export async function PUT(request) {
 
     try {
         const formData = await request.formData();
-        const id = formData.get('id');
+        const id = toTrimmedString(formData.get('id'));
 
         if (!id) {
             return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
 
         const updates = {};
-        if (formData.has('name')) updates.name = formData.get('name');
-        if (formData.has('location')) updates.location = formData.get('location');
-        if (formData.has('description')) updates.description = formData.get('description');
+        if (formData.has('name')) {
+            const name = toTrimmedString(formData.get('name'));
+            if (!name) {
+                return NextResponse.json({ error: 'Name is required.' }, { status: 400 });
+            }
+            updates.name = name;
+        }
+        if (formData.has('location')) updates.location = toTrimmedString(formData.get('location')) || null;
+        if (formData.has('description')) updates.description = toTrimmedString(formData.get('description')) || null;
+        if (formData.has('visualization_link')) updates.visualization_link = toTrimmedString(formData.get('visualization_link')) || null;
 
         const imageInputs = formData.getAll('images');
-        if (imageInputs.length > 0) {
+        const removedImages = parseRemovedImages(formData.getAll('removedImages'));
+
+        if (imageInputs.length > 0 || removedImages.size > 0) {
             const { data: existingInvestment, error: existingError } = await supabaseServer
                 .from('investments')
                 .select('images')
@@ -103,17 +130,23 @@ export async function PUT(request) {
             const existingImages = Array.isArray(existingInvestment?.images)
                 ? existingInvestment.images.filter((item) => typeof item === 'string' && item.trim().length > 0)
                 : [];
+            const keptImages = existingImages.filter((imageUrl) => !removedImages.has(imageUrl));
+            let newImages = [];
 
-            const newImages = await collectImageUrls({
-                supabase: supabaseServer,
-                inputs: imageInputs,
-                folder: 'investments',
-                prefix: 'inv-'
-            });
-
-            if (newImages.length > 0) {
-                updates.images = mergeImageUrls(existingImages, newImages);
+            if (imageInputs.length > 0) {
+                newImages = await collectImageUrls({
+                    supabase: supabaseServer,
+                    inputs: imageInputs,
+                    folder: 'investments',
+                    prefix: 'inv-'
+                });
             }
+
+            updates.images = mergeImageUrls(keptImages, newImages);
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return NextResponse.json({ error: 'No fields to update.' }, { status: 400 });
         }
 
         const { data, error } = await supabaseServer

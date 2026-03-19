@@ -11,6 +11,18 @@ function getUploadErrorResponse(error, fallbackMessage) {
     return NextResponse.json({ error: message }, { status });
 }
 
+function parseRemovedImages(inputs) {
+    const removed = new Set();
+
+    for (const input of inputs) {
+        if (typeof input !== 'string') continue;
+        const trimmed = input.trim();
+        if (trimmed) removed.add(trimmed);
+    }
+
+    return removed;
+}
+
 export async function GET() {
     try {
         const { data, error } = await supabaseServer
@@ -85,6 +97,22 @@ export async function PUT(request) {
         if (formData.has('title')) updates.title = formData.get('title');
         if (formData.has('date')) updates.date = formData.get('date');
         if (formData.has('content')) updates.content = formData.get('content');
+
+        const removedImages = parseRemovedImages(formData.getAll('removedImages'));
+        if (removedImages.size > 0) {
+            const { data: currentNews, error: currentNewsError } = await supabaseServer
+                .from('news')
+                .select('image')
+                .eq('id', id)
+                .single();
+
+            if (currentNewsError) throw currentNewsError;
+
+            const currentImage = typeof currentNews?.image === 'string' ? currentNews.image.trim() : '';
+            if (currentImage && removedImages.has(currentImage)) {
+                updates.image = null;
+            }
+        }
 
         const imageUrl = await collectSingleImageUrl({
             supabase: supabaseServer,

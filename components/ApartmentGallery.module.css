@@ -6,7 +6,7 @@
 
 .viewer {
     position: relative;
-    min-height: 520px;
+    min-height: var(--viewer-min-height, 520px);
     border-radius: 20px;
     overflow: hidden;
     border: 1px solid #d9e4ef;

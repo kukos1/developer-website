@@ -1,12 +1,17 @@
 ﻿import Link from 'next/link';
-import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ApartmentGallery from '@/components/ApartmentGallery';
 import { supabase } from '@/lib/supabase';
 
 import styles from '../page.module.css';
 
 export const dynamic = 'force-dynamic';
+
+function normalizeImages(investment) {
+    const directImages = Array.isArray(investment.images) ? investment.images : [];
+    return directImages.filter((item) => typeof item === 'string' && item.trim().length > 0);
+}
 
 async function getInvestments() {
     try {
@@ -36,34 +41,18 @@ export default async function InvestmentsPage() {
                     {investments.map((inv, index) => (
                         <div key={inv.id} style={{
                             display: 'grid',
-                            gridTemplateColumns: index % 2 === 0 ? '1fr 1fr' : '1fr 1fr',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
                             gap: '3rem',
                             alignItems: 'center',
                             direction: index % 2 === 1 ? 'rtl' : 'ltr'
                         }}>
-                            <div style={{ direction: 'ltr', position: 'relative', height: '400px', width: '100%' }}>
-                                {inv.images && inv.images.length > 0 ? (
-                                    <Image
-                                        src={inv.images[0]}
-                                        alt={inv.name}
-                                        fill
-                                        style={{ objectFit: 'cover', borderRadius: '8px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}
-                                        sizes="(max-width: 768px) 100vw, 50vw"
-                                    />
-                                ) : (
-                                    <div style={{
-                                        height: '100%',
-                                        width: '100%',
-                                        background: '#f0f0f0',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        borderRadius: '8px',
-                                        color: '#999'
-                                    }}>
-                                        Brak zdjęcia
-                                    </div>
-                                )}
+                            <div style={{ direction: 'ltr' }}>
+                                <ApartmentGallery
+                                    images={normalizeImages(inv)}
+                                    altBase={inv.name || 'Inwestycja'}
+                                    viewerMinHeight={400}
+                                    placeholderText="Brak zdjęć dla tej inwestycji."
+                                />
                             </div>
 
                             <div style={{ direction: 'ltr' }}>
@@ -74,9 +63,21 @@ export default async function InvestmentsPage() {
                                 <p style={{ lineHeight: '1.8', color: '#555', marginBottom: '2rem' }}>
                                     {inv.description}
                                 </p>
-                                <Link href="/kontakt" className="btn">
-                                    Zapytaj o szczegóły
-                                </Link>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.7rem' }}>
+                                    <Link href="/kontakt" className="btn">
+                                        Zapytaj o szczegóły
+                                    </Link>
+                                    {inv.visualization_link ? (
+                                        <a
+                                            href={inv.visualization_link}
+                                            className="btn btnOutline"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Zobacz wizualizacje
+                                        </a>
+                                    ) : null}
+                                </div>
                             </div>
                         </div>
                     ))}

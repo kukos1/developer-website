@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
@@ -225,7 +226,7 @@ function ApartmentsManager() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm('Usuńac ten rekord?')) return;
+        if (!confirm('Usunąć ten rekord?')) return;
         await requestJson(`/api/apartments?id=${id}`, { method: 'DELETE' });
         await fetchItems();
     };
@@ -303,7 +304,7 @@ function InvestmentsManager() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm('Usuńac ten rekord?')) return;
+        if (!confirm('Usunąć ten rekord?')) return;
         await requestJson(`/api/investments?id=${id}`, { method: 'DELETE' });
         await fetchItems();
     };
@@ -337,6 +338,7 @@ function InvestmentsManager() {
                     fields={[
                         { name: 'name', label: 'Nazwa inwestycji', type: 'text' },
                         { name: 'location', label: 'Lokalizacja', type: 'text' },
+                        { name: 'visualization_link', label: 'Link do wizualizacji (Google Drive)', type: 'url' },
                         { name: 'description', label: 'Opis', type: 'textarea' },
                         { name: 'images', label: 'Zdjęcia', type: 'file', multiple: true }
                     ]}
@@ -377,7 +379,7 @@ function BlogManager() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm('Usuńac ten rekord?')) return;
+        if (!confirm('Usunąć ten rekord?')) return;
         await requestJson(`/api/news?id=${id}`, { method: 'DELETE' });
         await fetchItems();
     };
@@ -480,7 +482,7 @@ function LeadsManager() {
     };
 
     const handleDeleteLead = async (id) => {
-        if (!confirm('Usuńac ten lead?')) return;
+        if (!confirm('Usunąć ten lead?')) return;
 
         setDeletingId(id);
         setSubmitError('');
@@ -625,6 +627,7 @@ function RecordRow({ title, subtitle, onEdit, onDelete }) {
 function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
     const [formData, setFormData] = useState({});
     const [files, setFiles] = useState({});
+    const [removedImagesByField, setRemovedImagesByField] = useState({});
     const [loading, setLoading] = useState(false);
     const [submitError, setSubmitError] = useState('');
 
@@ -638,6 +641,7 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
         }
 
         setFiles({});
+        setRemovedImagesByField({});
         setSubmitError('');
     }, [initialData, fields]);
 
@@ -661,6 +665,57 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
             ...prev,
             [fieldName]: e.target.multiple ? selectedFiles : selectedFiles[0]
         }));
+    };
+
+    const getExistingImages = (field) => {
+        const rawValue = formData[field.name];
+        let urls = [];
+
+        if (Array.isArray(rawValue)) {
+            urls = rawValue;
+        } else if (typeof rawValue === 'string' && rawValue.trim().length > 0) {
+            urls = [rawValue.trim()];
+        }
+
+        if (!field.multiple && urls.length > 1) {
+            urls = urls.slice(0, 1);
+        }
+
+        const removed = new Set(removedImagesByField[field.name] || []);
+
+        return urls
+            .filter((value) => typeof value === 'string')
+            .map((value) => value.trim())
+            .filter((value) => value.length > 0 && !removed.has(value));
+    };
+
+    const markImageForRemoval = (fieldName, imageUrl) => {
+        setRemovedImagesByField((prev) => {
+            const current = prev[fieldName] || [];
+            if (current.includes(imageUrl)) return prev;
+            return {
+                ...prev,
+                [fieldName]: [...current, imageUrl]
+            };
+        });
+    };
+
+    const restoreRemovedImage = (fieldName, imageUrl) => {
+        setRemovedImagesByField((prev) => {
+            const current = prev[fieldName] || [];
+            const next = current.filter((url) => url !== imageUrl);
+
+            if (next.length === 0) {
+                const nextState = { ...prev };
+                delete nextState[fieldName];
+                return nextState;
+            }
+
+            return {
+                ...prev,
+                [fieldName]: next
+            };
+        });
     };
 
     const uploadSingleFile = async (file, folder) => {
@@ -701,6 +756,17 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
         }
     };
 
+    const appendRemovedImages = (data) => {
+        Object.values(removedImagesByField).forEach((urls) => {
+            if (!Array.isArray(urls)) return;
+            urls.forEach((url) => {
+                if (typeof url === 'string' && url.trim().length > 0) {
+                    data.append('removedImages', url.trim());
+                }
+            });
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -710,12 +776,16 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
             const data = new FormData();
             if (initialData?.id) data.append('id', initialData.id);
 
-            Object.keys(formData).forEach((key) => {
-                if (typeof formData[key] !== 'object') {
-                    data.append(key, formData[key]);
+            fields.forEach((field) => {
+                if (field.type === 'file') return;
+
+                const value = formData[field.name];
+                if (typeof value !== 'object' && value != null) {
+                    data.append(field.name, value);
                 }
             });
 
+            appendRemovedImages(data);
             await appendUploadedFiles(data);
 
             const method = initialData ? 'PUT' : 'POST';
@@ -725,6 +795,7 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
             });
 
             setFiles({});
+            setRemovedImagesByField({});
             onSuccess();
         } catch (error) {
             console.error(error);
@@ -780,6 +851,83 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
                             </select>
                         ) : field.type === 'file' ? (
                             <>
+                                {initialData && (
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        {getExistingImages(field).length > 0 && (
+                                            <>
+                                                <p style={{ margin: '0 0 0.5rem', color: '#456', fontSize: '0.88rem', fontWeight: 600 }}>
+                                                    Aktualne zdjęcia
+                                                </p>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '0.6rem', marginBottom: '0.6rem' }}>
+                                                    {getExistingImages(field).map((imageUrl, index) => (
+                                                        <div
+                                                            key={`${field.name}-${imageUrl}-${index}`}
+                                                            style={{
+                                                                border: '1px solid #d4dfeb',
+                                                                borderRadius: '8px',
+                                                                background: '#fff',
+                                                                overflow: 'hidden'
+                                                            }}
+                                                        >
+                                                            <Image
+                                                                src={imageUrl}
+                                                                alt={`${field.label} ${index + 1}`}
+                                                                width={240}
+                                                                height={180}
+                                                                style={{ width: '100%', height: '90px', objectFit: 'cover', display: 'block' }}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => markImageForRemoval(field.name, imageUrl)}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    border: 'none',
+                                                                    borderTop: '1px solid #e6eef6',
+                                                                    background: '#fff5f5',
+                                                                    color: '#a82424',
+                                                                    fontWeight: 700,
+                                                                    padding: '0.4rem 0.5rem',
+                                                                    cursor: 'pointer'
+                                                                }}
+                                                            >
+                                                                Usuń zdjęcie
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {(removedImagesByField[field.name] || []).length > 0 && (
+                                            <div style={{ border: '1px dashed #d8e4f1', borderRadius: '8px', padding: '0.65rem', background: '#fff' }}>
+                                                <p style={{ margin: '0 0 0.45rem', color: '#5c7086', fontSize: '0.82rem' }}>
+                                                    Zdjęcia oznaczone do usunięcia (zapisz rekord, aby zatwierdzić):
+                                                </p>
+                                                <div style={{ display: 'grid', gap: '0.35rem' }}>
+                                                    {(removedImagesByField[field.name] || []).map((imageUrl) => (
+                                                        <button
+                                                            key={`${field.name}-restore-${imageUrl}`}
+                                                            type="button"
+                                                            onClick={() => restoreRemovedImage(field.name, imageUrl)}
+                                                            style={{
+                                                                textAlign: 'left',
+                                                                border: '1px solid #d6e2ef',
+                                                                borderRadius: '6px',
+                                                                padding: '0.35rem 0.55rem',
+                                                                background: '#f7fbff',
+                                                                color: '#214668',
+                                                                cursor: 'pointer'
+                                                            }}
+                                                        >
+                                                            Cofnij usunięcie
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -822,4 +970,5 @@ function GenericForm({ endpoint, initialData, onSuccess, onCancel, fields }) {
         </div>
     );
 }
+
 

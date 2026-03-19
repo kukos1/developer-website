@@ -56,6 +56,18 @@ function parseStatus(value) {
     return normalized;
 }
 
+function parseRemovedImages(inputs) {
+    const removed = new Set();
+
+    for (const input of inputs) {
+        if (typeof input !== 'string') continue;
+        const trimmed = input.trim();
+        if (trimmed) removed.add(trimmed);
+    }
+
+    return removed;
+}
+
 function mergeImageUrls(existingImages, newImages) {
     return [...new Set([...existingImages, ...newImages].filter(Boolean))];
 }
@@ -242,7 +254,9 @@ export async function PUT(request) {
         }
 
         const imageInputs = formData.getAll('images');
-        if (imageInputs.length > 0) {
+        const removedImages = parseRemovedImages(formData.getAll('removedImages'));
+
+        if (imageInputs.length > 0 || removedImages.size > 0) {
             const { data: existingApartment, error: existingError } = await supabaseServer
                 .from('apartments')
                 .select('images, image_url')
@@ -255,17 +269,22 @@ export async function PUT(request) {
                 ? existingApartment.images.filter((item) => typeof item === 'string' && item.trim().length > 0)
                 : [];
 
-            const newImages = await collectImageUrls({
-                supabase: supabaseServer,
-                inputs: imageInputs,
-                folder: 'apartments'
-            });
+            const keptImages = existingImages.filter((imageUrl) => !removedImages.has(imageUrl));
+            let newImages = [];
 
-            if (newImages.length > 0) {
-                const mergedImages = mergeImageUrls(existingImages, newImages);
-                updates.images = mergedImages;
-                updates.image_url = existingApartment?.image_url || mergedImages[0] || null;
+            if (imageInputs.length > 0) {
+                newImages = await collectImageUrls({
+                    supabase: supabaseServer,
+                    inputs: imageInputs,
+                    folder: 'apartments'
+                });
             }
+
+            const mergedImages = mergeImageUrls(keptImages, newImages);
+            const currentCover = toTrimmedString(existingApartment?.image_url);
+
+            updates.images = mergedImages;
+            updates.image_url = mergedImages.includes(currentCover) ? currentCover : (mergedImages[0] || null);
         }
 
         if (Object.keys(updates).length === 0) {
